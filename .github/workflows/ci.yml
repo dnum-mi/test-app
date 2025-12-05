@@ -1,0 +1,159 @@
+name: CI
+
+on:
+  # pull_request:
+  #   types:
+  #   - opened
+  #   - reopened
+  #   - synchronize
+  #   - ready_for_review
+  #   branches:
+  #   - "**"
+  workflow_dispatch:
+
+env:
+  BUILD_AMD64: true
+  BUILD_ARM64: true
+  LATEST_TAG: false
+  USE_QEMU: false
+  IMAGE_TAG: ${{ github.event.pull_request.number || github.event.number || github.sha }}
+
+jobs:
+  path-filter:
+    runs-on: ubuntu-latest
+    if: ${{ !github.event.pull_request.draft }}
+    outputs:
+      apps: ${{ steps.filter.outputs.apps }}
+      packages: ${{ steps.filter.outputs.packages }}
+      ci: ${{ steps.filter.outputs.ci }}
+    steps:
+    - name: Checks-out repository
+      uses: actions/checkout@v5
+
+    - name: Check updated files paths
+      uses: dorny/paths-filter@v3
+      id: filter
+      with:
+        filters: |
+          apps:
+            - 'apps/**'
+          packages:
+            - 'packages/**'
+          ci:
+            - '.github/workflows/**'
+
+  expose-vars:
+    runs-on: ubuntu-latest
+    if: ${{ !github.event.pull_request.draft }}
+    outputs:
+      BUILD_AMD64: ${{ env.BUILD_AMD64 }}
+      BUILD_ARM64: ${{ env.BUILD_ARM64 }}
+      LATEST_TAG: ${{ env.LATEST_TAG }}
+      USE_QEMU: ${{ env.USE_QEMU }}
+      IMAGE_TAG: ${{ env.IMAGE_TAG }}
+    steps:
+    - name: Exposing env vars
+      run: echo "Exposing env vars"
+
+  build-docker:
+    uses: dnum-mi/fabnum-cicd/.github/workflows/build-docker.yml@main
+    needs:
+    - expose-vars
+    permissions:
+      packages: write
+      contents: read
+    strategy:
+      matrix:
+        service:
+        - name: api
+          context: ./apps/api
+          dockerfile: ./apps/api/Dockerfile
+        - name: client
+          context: ./apps/client
+          dockerfile: ./apps/client/Dockerfile
+    with:
+      IMAGE_NAME: ghcr.io/${{ github.repository}}/${{ matrix.service.name }}
+      IMAGE_TAG: ${{ needs.expose-vars.outputs.IMAGE_TAG }}
+      IMAGE_CONTEXT: ${{ matrix.service.context }}
+      IMAGE_DOCKERFILE: ${{ matrix.service.dockerfile }}
+      BUILD_AMD64: ${{ needs.expose-vars.outputs.BUILD_AMD64 == 'true' }}
+      BUILD_ARM64: ${{ needs.expose-vars.outputs.BUILD_ARM64 == 'true' }}
+      LATEST_TAG: ${{ needs.expose-vars.outputs.LATEST_TAG == 'true' }}
+      USE_QEMU: ${{ needs.expose-vars.outputs.USE_QEMU == 'true' }}
+
+  # scan-sonarqube:
+  #   uses: dnum-mi/fabnum-cicd/.github/workflows/scan-sonarqube.yml@main
+  #   needs:
+  #   - expose-vars
+  #   - build-docker
+  #   permissions:
+  #     issues: write
+  #     pull-requests: write
+  #     contents: read
+  #   with:
+  #     SONAR_URL: https://sonarqube.example.com
+  #     SOURCES_PATH: apps,packages
+  #     SONAR_EXTRA_ARGS: -Dsonar.coverage.exclusions=**/*.spec.js,**/*.spec.ts,**/*.vue,**/assets/** -Dsonar.exclusions=**/*.spec.js,**/*.spec.ts,**/*.vue
+  #   secrets:
+  #     SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+  #     SONAR_PROJECT_KEY: ${{ secrets.SONAR_PROJECT_KEY }}
+
+  scan-trivy-conf:
+    uses: dnum-mi/fabnum-cicd/.github/workflows/scan-trivy.yml@main
+    needs:
+    - expose-vars
+    - build-docker
+    permissions:
+      contents: read
+    with:
+      PATH: ./
+
+  scan-trivy-images:
+    uses: dnum-mi/fabnum-cicd/.github/workflows/scan-trivy.yml@main
+    needs:
+    - expose-vars
+    - build-docker
+    permissions:
+      contents: read
+    strategy:
+      matrix:
+        service:
+        - name: api
+          context: ./apps/api
+          dockerfile: ./apps/api/Dockerfile
+        - name: client
+          context: ./apps/client
+          dockerfile: ./apps/client/Dockerfile
+        - name: docs
+          context: ./apps/docs
+          dockerfile: ./apps/docs/Dockerfile
+    with:
+      IMAGE: ghcr.io/${{ github.repository}}/${{ matrix.service.name }}:${{ needs.expose-vars.outputs.IMAGE_TAG }}
+
+  # Workaround for required status check in protection branches (see. https://github.com/orgs/community/discussions/13690)
+  all-jobs-passed:
+    name: Check jobs status
+    runs-on: ubuntu-latest
+    if: ${{ always() }}
+    needs:
+    - path-filter
+    - expose-vars
+    - build-docker
+    # - scan-sonarqube
+    - scan-trivy-conf
+    - scan-trivy-images
+    steps:
+    - name: Check status of all required jobs
+      run: |-
+        NEEDS_CONTEXT='${{ toJson(needs) }}'
+        JOB_IDS=$(echo "$NEEDS_CONTEXT" | jq -r 'keys[]')
+        for JOB_ID in $JOB_IDS; do
+          RESULT=$(echo "$NEEDS_CONTEXT" | jq -r ".[\"$JOB_ID\"].result")
+          echo "$JOB_ID job result: $RESULT"
+          if [[ $RESULT != "success" && $RESULT != "skipped" ]]; then
+            echo "***"
+            echo "Error: The $JOB_ID job did not pass."
+            exit 1
+          fi
+        done
+        echo "All jobs passed or were skipped."

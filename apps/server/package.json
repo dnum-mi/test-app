@@ -1,0 +1,16 @@
+{
+  "name": "server",
+  "module": "src/index.ts",
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "NODE_ENV=development bun run --hot ./src/index.ts",
+    "start": "bun run"
+  },
+  "devDependencies": {
+    "@types/bun": "latest"
+  },
+  "peerDependencies": {
+    "typescript": "^5.9.3"
+  }
+}

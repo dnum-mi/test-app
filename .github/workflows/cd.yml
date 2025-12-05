@@ -1,0 +1,139 @@
+name: CD
+
+on:
+  # push:
+  #   branches:
+  #   - develop
+  #   - main
+  workflow_dispatch:
+
+env:
+  BUILD_AMD64: true
+  BUILD_ARM64: true
+  LATEST_TAG: ${{ github.ref_name == 'main' }}
+  USE_QEMU: false
+  TAG_MAJOR_AND_MINOR: false
+  AUTOMERGE_PRERELEASE: false
+  AUTOMERGE_RELEASE: false
+  PRERELEASE_BRANCH: develop
+  RELEASE_BRANCH: main
+  REBASE_PRERELEASE_BRANCH: true
+  RELEASE_CONFIG_FILE: release-please-config.json
+  RELEASE_MANIFEST_FILE: .release-please-manifest.json
+  PRERELEASE_CONFIG_FILE: release-please-config-rc.json
+  PRERELEASE_MANIFEST_FILE: .release-please-manifest-rc.json
+
+jobs:
+  expose-vars:
+    runs-on: ubuntu-latest
+    outputs:
+      BUILD_AMD64: ${{ env.BUILD_AMD64 }}
+      BUILD_ARM64: ${{ env.BUILD_ARM64 }}
+      LATEST_TAG: ${{ env.LATEST_TAG }}
+      USE_QEMU: ${{ env.USE_QEMU }}
+      TAG_MAJOR_AND_MINOR: ${{ env.TAG_MAJOR_AND_MINOR }}
+      AUTOMERGE_PRERELEASE: ${{ env.AUTOMERGE_PRERELEASE }}
+      AUTOMERGE_RELEASE: ${{ env.AUTOMERGE_RELEASE }}
+      PRERELEASE_BRANCH: ${{ env.PRERELEASE_BRANCH }}
+      RELEASE_BRANCH: ${{ env.RELEASE_BRANCH }}
+      REBASE_PRERELEASE_BRANCH: ${{ env.REBASE_PRERELEASE_BRANCH }}
+      RELEASE_CONFIG_FILE: ${{ env.RELEASE_CONFIG_FILE }}
+      RELEASE_MANIFEST_FILE: ${{ env.RELEASE_MANIFEST_FILE }}
+      PRERELEASE_CONFIG_FILE: ${{ env.PRERELEASE_CONFIG_FILE }}
+      PRERELEASE_MANIFEST_FILE: ${{ env.PRERELEASE_MANIFEST_FILE }}
+    steps:
+    - name: Exposing env vars
+      run: echo "Exposing env vars"
+
+  release:
+    uses: dnum-mi/fabnum-cicd/.github/workflows/release-app.yml@main
+    needs:
+    - expose-vars
+    permissions:
+      issues: write
+      pull-requests: write
+      contents: write
+    with:
+      TAG_MAJOR_AND_MINOR: ${{ needs.expose-vars.outputs.TAG_MAJOR_AND_MINOR == 'true' }}
+      AUTOMERGE_PRERELEASE: ${{ needs.expose-vars.outputs.AUTOMERGE_PRERELEASE == 'true' }}
+      AUTOMERGE_RELEASE: ${{ needs.expose-vars.outputs.AUTOMERGE_RELEASE == 'true' }}
+      PRERELEASE_BRANCH: ${{ needs.expose-vars.outputs.PRERELEASE_BRANCH }}
+      RELEASE_BRANCH: ${{ needs.expose-vars.outputs.RELEASE_BRANCH }}
+      REBASE_PRERELEASE_BRANCH: ${{ needs.expose-vars.outputs.REBASE_PRERELEASE_BRANCH == 'true' }}
+      RELEASE_CONFIG_FILE: ${{ needs.expose-vars.outputs.RELEASE_CONFIG_FILE }}
+      RELEASE_MANIFEST_FILE: ${{ needs.expose-vars.outputs.RELEASE_MANIFEST_FILE }}
+      PRERELEASE_CONFIG_FILE: ${{ needs.expose-vars.outputs.PRERELEASE_CONFIG_FILE }}
+      PRERELEASE_MANIFEST_FILE: ${{ needs.expose-vars.outputs.PRERELEASE_MANIFEST_FILE }}
+    # secrets:
+    #   GH_PAT: ${{ secrets.GH_PAT }} # Required for automerge PRs
+
+  build-docker:
+    uses: dnum-mi/fabnum-cicd/.github/workflows/build-docker.yml@main
+    if: ${{ needs.release.outputs.release-created == 'true' }}
+    needs:
+    - expose-vars
+    - release
+    permissions:
+      packages: write
+      contents: read
+    strategy:
+      matrix:
+        service:
+        - name: api
+          context: ./apps/api
+          dockerfile: ./apps/api/Dockerfile
+        - name: client
+          context: ./apps/client
+          dockerfile: ./apps/client/Dockerfile
+        - name: docs
+          context: ./apps/docs
+          dockerfile: ./apps/docs/Dockerfile
+    with:
+      IMAGE_NAME: ghcr.io/${{ github.repository}}/${{ matrix.service.name }}
+      IMAGE_TAG: ${{ format('{0}.{1}.{2}', needs.release.outputs.major-tag, needs.release.outputs.minor-tag, needs.release.outputs.patch-tag) }}
+      IMAGE_CONTEXT: ${{ matrix.service.context }}
+      IMAGE_DOCKERFILE: ${{ matrix.service.dockerfile }}
+      BUILD_AMD64: ${{ needs.expose-vars.outputs.BUILD_AMD64 == 'true' }}
+      BUILD_ARM64: ${{ needs.expose-vars.outputs.BUILD_ARM64 == 'true' }}
+      LATEST_TAG: ${{ needs.expose-vars.outputs.LATEST_TAG == 'true' }}
+      USE_QEMU: ${{ needs.expose-vars.outputs.USE_QEMU == 'true' }}
+
+  bump-chart:
+    uses: dnum-mi/fabnum-cicd/.github/workflows/update-helm-chart.yml@main
+    needs:
+    - expose-vars
+    - release
+    - build-docker
+    if: ${{ needs.release.outputs.release-created == 'true' }}
+    permissions:
+      issues: write
+      pull-requests: write
+      contents: write
+    with:
+      RUN_MODE: caller
+      WORKFLOW_NAME: cd.yml
+      CHART_REPO: dnum-mi/test-helm
+      CHART_NAME: test-app
+      APP_VERSION: ${{ format('{0}.{1}.{2}', needs.release.outputs.major-tag, needs.release.outputs.minor-tag, needs.release.outputs.patch-tag) }}
+      UPGRADE_TYPE: ${{ github.ref_name == 'develop' && 'prerelease' || github.ref_name == 'main' && 'patch' }}
+      PRERELEASE_IDENTIFIER: rc
+    secrets:
+      GH_PAT: ${{ secrets.GH_PAT }}
+
+  sync-cpin:
+    uses: dnum-mi/fabnum-cicd/.github/workflows/sync-cpin.yml@main
+    needs:
+    - expose-vars
+    - release
+    - build-docker
+    - bump-chart
+    if: ${{ needs.release.outputs.release-created == 'true' }}
+    permissions:
+      contents: write
+    with:
+      GITLAB_URL: ${{ vars.GITLAB_URL }}
+      GIT_MIRROR_PROJECT_ID: ${{ vars.GIT_MIRROR_PROJECT_ID }}
+      BRANCH_TO_SYNC: ${{ format('v{0}.{1}.{2}', needs.release.outputs.major-tag, needs.release.outputs.minor-tag, needs.release.outputs.patch-tag) }}
+      REPOSITORY_NAME: ${{ vars.REPOSITORY_NAME }}
+    secrets:
+      GIT_MIRROR_TOKEN: ${{ secrets.GIT_MIRROR_TOKEN }}

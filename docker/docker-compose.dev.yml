@@ -1,0 +1,38 @@
+services:
+  server:
+    image: test-app/server:dev
+    container_name: test-app_server
+    build:
+      context: ../apps/server
+      dockerfile: ./Dockerfile
+      target: dev
+    restart: always
+    ports:
+      - 8081:8081
+    volumes:
+      - ../apps/server:/app
+      - /app/node_modules
+    networks:
+      - test-app-network
+
+  client:
+    image: test-app/client:dev
+    container_name: test-app_client
+    build:
+      context: ../apps/client
+      dockerfile: ./Dockerfile
+      target: dev
+    restart: always
+    ports:
+      - 8080:8080
+    environment:
+      VITE_SERVER_HOST: http://localhost:8081
+    volumes:
+      - ../apps/client:/app
+      - /app/node_modules
+    networks:
+      - test-app-network
+
+networks:
+  test-app-network:
+    # driver: bridge

@@ -1,0 +1,36 @@
+ingress:
+  enabled: true
+  className: ""
+  annotations: {}
+  hosts:
+  - example.domain.local
+
+server:
+  image: 
+    repository: test-app/server
+    tag: dev
+    pullPolicy: Never
+    pullSecret: null
+  extraVolumes:
+  - name: dev-workspace
+    path: /app/apps/server/src
+    type: hostPath
+  extraVolumeMounts:
+  - name: dev-workspace
+    mountPath: /app/src
+
+client:
+  image: 
+    repository: test-app/client
+    tag: dev
+    pullPolicy: Never
+    pullSecret: null
+  extraVolumes:
+  - name: dev-workspace
+    path: /app/apps/client/src
+    type: hostPath
+  extraVolumeMounts:
+  - name: dev-workspace
+    mountPath: /app/src
+  env:
+    VITE_SERVER_HOST: http://example.domain.local
