@@ -1,22 +1,22 @@
 name: CI
 
 on:
-  # pull_request:
-  #   types:
-  #   - opened
-  #   - reopened
-  #   - synchronize
-  #   - ready_for_review
-  #   branches:
-  #   - "**"
+  pull_request:
+    types:
+    - opened
+    - reopened
+    - synchronize
+    - ready_for_review
+    branches:
+    - "**"
   workflow_dispatch:
 
 env:
   BUILD_AMD64: true
-  BUILD_ARM64: true
+  BUILD_ARM64: false
   LATEST_TAG: false
   USE_QEMU: false
-  IMAGE_TAG: ${{ github.event.pull_request.number || github.event.number || github.sha }}
+  IMAGE_TAG: ${{ (github.event.pull_request.number && format('pr-{0}', github.event.pull_request.number)) || (github.event.number && format('pr-{0}', github.event.number)) || '' }}
 
 jobs:
   path-filter:
@@ -64,22 +64,23 @@ jobs:
       contents: read
     strategy:
       matrix:
-        service:
-        - name: api
-          context: ./apps/api
-          dockerfile: ./apps/api/Dockerfile
+        services:
+        - name: server
+          context: ./apps/server
+          dockerfile: ./apps/server/Dockerfile
         - name: client
           context: ./apps/client
           dockerfile: ./apps/client/Dockerfile
     with:
-      IMAGE_NAME: ghcr.io/${{ github.repository}}/${{ matrix.service.name }}
+      IMAGE_NAME: ghcr.io/${{ github.repository}}/${{ matrix.services.name }}
       IMAGE_TAG: ${{ needs.expose-vars.outputs.IMAGE_TAG }}
-      IMAGE_CONTEXT: ${{ matrix.service.context }}
-      IMAGE_DOCKERFILE: ${{ matrix.service.dockerfile }}
+      IMAGE_CONTEXT: ${{ matrix.services.context }}
+      IMAGE_DOCKERFILE: ${{ matrix.services.dockerfile }}
       BUILD_AMD64: ${{ needs.expose-vars.outputs.BUILD_AMD64 == 'true' }}
       BUILD_ARM64: ${{ needs.expose-vars.outputs.BUILD_ARM64 == 'true' }}
       LATEST_TAG: ${{ needs.expose-vars.outputs.LATEST_TAG == 'true' }}
       USE_QEMU: ${{ needs.expose-vars.outputs.USE_QEMU == 'true' }}
+    secrets: inherit
 
   # scan-sonarqube:
   #   uses: dnum-mi/fabnum-cicd/.github/workflows/scan-sonarqube.yml@main
@@ -105,8 +106,13 @@ jobs:
     - build-docker
     permissions:
       contents: read
+      security-events: write
+      pull-requests: write
+      packages: read
     with:
       PATH: ./
+      PR_NUMBER: ${{ github.event.pull_request.number || github.event.number || '' }}
+      GITHUB_SECURITY_TAB: false
 
   scan-trivy-images:
     uses: dnum-mi/fabnum-cicd/.github/workflows/scan-trivy.yml@main
@@ -115,20 +121,22 @@ jobs:
     - build-docker
     permissions:
       contents: read
+      security-events: write
+      pull-requests: write
+      packages: read
     strategy:
       matrix:
-        service:
-        - name: api
-          context: ./apps/api
-          dockerfile: ./apps/api/Dockerfile
+        services:
+        - name: server
+          context: ./apps/server
+          dockerfile: ./apps/server/Dockerfile
         - name: client
           context: ./apps/client
           dockerfile: ./apps/client/Dockerfile
-        - name: docs
-          context: ./apps/docs
-          dockerfile: ./apps/docs/Dockerfile
     with:
-      IMAGE: ghcr.io/${{ github.repository}}/${{ matrix.service.name }}:${{ needs.expose-vars.outputs.IMAGE_TAG }}
+      IMAGE: ghcr.io/${{ github.repository}}/${{ matrix.services.name }}:${{ needs.expose-vars.outputs.IMAGE_TAG }}
+      PR_NUMBER: ${{ github.event.pull_request.number || github.event.number || '' }}
+      GITHUB_SECURITY_TAB: false
 
   # Workaround for required status check in protection branches (see. https://github.com/orgs/community/discussions/13690)
   all-jobs-passed:
