@@ -1,10 +1,10 @@
 name: CD
 
 on:
-  # push:
-  #   branches:
-  #   - develop
-  #   - main
+  push:
+    branches:
+    - develop
+    - main
   workflow_dispatch:
 
 env:
@@ -79,15 +79,12 @@ jobs:
     strategy:
       matrix:
         service:
-        - name: api
-          context: ./apps/api
-          dockerfile: ./apps/api/Dockerfile
+        - name: server
+          context: ./apps/server
+          dockerfile: ./apps/server/Dockerfile
         - name: client
           context: ./apps/client
           dockerfile: ./apps/client/Dockerfile
-        - name: docs
-          context: ./apps/docs
-          dockerfile: ./apps/docs/Dockerfile
     with:
       IMAGE_NAME: ghcr.io/${{ github.repository}}/${{ matrix.service.name }}
       IMAGE_TAG: ${{ format('{0}.{1}.{2}', needs.release.outputs.major-tag, needs.release.outputs.minor-tag, needs.release.outputs.patch-tag) }}
@@ -111,7 +108,7 @@ jobs:
       contents: write
     with:
       RUN_MODE: caller
-      WORKFLOW_NAME: cd.yml
+      WORKFLOW_NAME: update-chart.yml
       CHART_REPO: dnum-mi/test-helm
       CHART_NAME: test-app
       APP_VERSION: ${{ format('{0}.{1}.{2}', needs.release.outputs.major-tag, needs.release.outputs.minor-tag, needs.release.outputs.patch-tag) }}
@@ -135,5 +132,6 @@ jobs:
       GIT_MIRROR_PROJECT_ID: ${{ vars.GIT_MIRROR_PROJECT_ID }}
       BRANCH_TO_SYNC: ${{ format('v{0}.{1}.{2}', needs.release.outputs.major-tag, needs.release.outputs.minor-tag, needs.release.outputs.patch-tag) }}
       REPOSITORY_NAME: ${{ vars.REPOSITORY_NAME }}
+      ADDITIONAL_VARIABLES: "${{ format('{ \"SERVER_IMAGE_NAMES\": \"server:{0}.{1}.{2}\", \"CLIENT_IMAGE_NAMES\": \"client:{0}.{1}.{2}\" }', needs.release.outputs.major-tag, needs.release.outputs.minor-tag, needs.release.outputs.patch-tag) }}"
     secrets:
       GIT_MIRROR_TOKEN: ${{ secrets.GIT_MIRROR_TOKEN }}
