@@ -106,6 +106,7 @@ jobs:
       issues: write
       pull-requests: write
       contents: write
+      actions: write
     with:
       RUN_MODE: caller
       WORKFLOW_NAME: update-chart.yml
