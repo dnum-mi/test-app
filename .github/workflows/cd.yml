@@ -22,6 +22,7 @@ env:
   RELEASE_MANIFEST_FILE: .release-please-manifest.json
   PRERELEASE_CONFIG_FILE: release-please-config-rc.json
   PRERELEASE_MANIFEST_FILE: .release-please-manifest-rc.json
+  ENABLE_PRERELEASE: true
 
 jobs:
   expose-vars:
@@ -41,6 +42,7 @@ jobs:
       RELEASE_MANIFEST_FILE: ${{ env.RELEASE_MANIFEST_FILE }}
       PRERELEASE_CONFIG_FILE: ${{ env.PRERELEASE_CONFIG_FILE }}
       PRERELEASE_MANIFEST_FILE: ${{ env.PRERELEASE_MANIFEST_FILE }}
+      ENABLE_PRERELEASE: ${{ env.ENABLE_PRERELEASE }}
     steps:
     - name: Exposing env vars
       run: echo "Exposing env vars"
@@ -64,6 +66,7 @@ jobs:
       RELEASE_MANIFEST_FILE: ${{ needs.expose-vars.outputs.RELEASE_MANIFEST_FILE }}
       PRERELEASE_CONFIG_FILE: ${{ needs.expose-vars.outputs.PRERELEASE_CONFIG_FILE }}
       PRERELEASE_MANIFEST_FILE: ${{ needs.expose-vars.outputs.PRERELEASE_MANIFEST_FILE }}
+      ENABLE_PRERELEASE: ${{ needs.expose-vars.outputs.ENABLE_PRERELEASE == 'true' }}
     # secrets:
     #   GH_PAT: ${{ secrets.GH_PAT }} # Required for automerge PRs
 
