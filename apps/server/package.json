@@ -8,7 +8,7 @@
     "start": "bun run"
   },
   "devDependencies": {
-    "@types/bun": "latest"
+    "@types/bun": "^1.3.4"
   },
   "peerDependencies": {
     "typescript": "^5.9.3"
