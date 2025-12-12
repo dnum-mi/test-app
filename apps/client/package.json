@@ -9,8 +9,10 @@
     "preview": "bunx --bun vite preview"
   },
   "devDependencies": {
-    "typescript": "^5.9.3",
-    "vite": "^7.2.6",
-    "@types/bun": "^1.3.3"
+    "vite": "^7.2.7",
+    "@types/bun": "^1.3.4"
+  },
+  "peerDependencies": {
+    "typescript": "^5.9.3"
   }
 }
