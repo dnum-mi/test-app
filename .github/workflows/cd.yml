@@ -9,9 +9,9 @@ on:
 
 env:
   BUILD_AMD64: true
-  BUILD_ARM64: true
+  BUILD_ARM64: false
   LATEST_TAG: ${{ github.ref_name == 'main' }}
-  USE_QEMU: false
+  USE_QEMU: true
   TAG_MAJOR_AND_MINOR: false
   AUTOMERGE_PRERELEASE: false
   AUTOMERGE_RELEASE: false

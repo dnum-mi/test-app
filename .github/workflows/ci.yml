@@ -15,7 +15,7 @@ env:
   BUILD_AMD64: true
   BUILD_ARM64: false
   LATEST_TAG: false
-  USE_QEMU: false
+  USE_QEMU: true
   IMAGE_TAG: ${{ (github.event.pull_request.number && format('pr-{0}', github.event.pull_request.number)) || (github.event.number && format('pr-{0}', github.event.number)) || '' }}
 
 jobs:
