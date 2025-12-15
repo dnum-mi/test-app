@@ -32,4 +32,5 @@ jobs:
     with:
       PR_NUMBER: ${{ github.event.pull_request.number }}
       BRANCH_NAME: ${{ github.event.pull_request.head.ref }}
-      IMAGE: ${{ format('ghcr.io/{0}/{1}:{2}', github.repository, matrix.images.name, github.event.pull_request.number) }}
+      IMAGE: ${{ format('ghcr.io/{0}/{1}:pr-{2}', github.repository, matrix.images.name, github.event.pull_request.number) }}
+    secrets: inherit
