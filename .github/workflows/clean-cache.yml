@@ -1,0 +1,35 @@
+name: Clean GitHub Cache and GHCR Image
+
+on:
+  pull_request:
+    types:
+    - closed
+    branches:
+    - "**"
+  workflow_dispatch:
+    inputs:
+      IMAGE:
+        description: Name of the image to delete from ghcr.io (eg. 'my-org/my-image:my-tag')
+        required: false
+        type: string
+      PR_NUMBER:
+        description: ID number of the pull request assiocited with the cache
+        required: false
+        type: number
+      BRANCH_NAME:
+        description: Branch name assiocited with the cache
+        required: false
+        type: string
+
+jobs:
+  cleanup:
+    uses: dnum-mi/fabnum-cicd/.github/workflows/clean-cache.yml@main
+    strategy:
+      matrix:
+        images:
+        - name: server
+        - name: client
+    with:
+      PR_NUMBER: ${{ github.event.pull_request.number }}
+      BRANCH_NAME: ${{ github.event.pull_request.head.ref }}
+      IMAGE: ${{ format('ghcr.io/{0}/{1}:{2}', github.repository, matrix.images.name, github.event.pull_request.number) }}
