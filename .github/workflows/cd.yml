@@ -90,13 +90,14 @@ jobs:
           dockerfile: ./apps/client/Dockerfile
     with:
       IMAGE_NAME: ghcr.io/${{ github.repository}}/${{ matrix.service.name }}
-      IMAGE_TAG: ${{ format('{0}.{1}.{2}', needs.release.outputs.major-tag, needs.release.outputs.minor-tag, needs.release.outputs.patch-tag) }}
+      IMAGE_TAG: ${{ needs.release.outputs.version }}
       IMAGE_CONTEXT: ${{ matrix.service.context }}
       IMAGE_DOCKERFILE: ${{ matrix.service.dockerfile }}
       BUILD_AMD64: ${{ needs.expose-vars.outputs.BUILD_AMD64 == 'true' }}
       BUILD_ARM64: ${{ needs.expose-vars.outputs.BUILD_ARM64 == 'true' }}
       LATEST_TAG: ${{ needs.expose-vars.outputs.LATEST_TAG == 'true' }}
       USE_QEMU: ${{ needs.expose-vars.outputs.USE_QEMU == 'true' }}
+      TAG_MAJOR_AND_MINOR: ${{ needs.expose-vars.outputs.TAG_MAJOR_AND_MINOR == 'true' && needs.expose-vars.outputs.LATEST_TAG == 'true' }}
 
   bump-chart:
     uses: dnum-mi/fabnum-cicd/.github/workflows/update-helm-chart.yml@main
@@ -115,7 +116,7 @@ jobs:
       WORKFLOW_NAME: update-chart.yml
       CHART_REPO: dnum-mi/test-helm
       CHART_NAME: test-app
-      APP_VERSION: ${{ format('{0}.{1}.{2}', needs.release.outputs.major-tag, needs.release.outputs.minor-tag, needs.release.outputs.patch-tag) }}
+      APP_VERSION: ${{ needs.release.outputs.version }}
       UPGRADE_TYPE: ${{ github.ref_name == 'develop' && 'prerelease' || github.ref_name == 'main' && 'patch' }}
       PRERELEASE_IDENTIFIER: rc
     secrets:
@@ -134,8 +135,8 @@ jobs:
     with:
       GITLAB_URL: ${{ vars.GITLAB_URL }}
       GIT_MIRROR_PROJECT_ID: ${{ vars.GIT_MIRROR_PROJECT_ID }}
-      BRANCH_TO_SYNC: ${{ format('v{0}.{1}.{2}', needs.release.outputs.major-tag, needs.release.outputs.minor-tag, needs.release.outputs.patch-tag) }}
+      BRANCH_TO_SYNC: ${{ needs.release.outputs.version }}
       REPOSITORY_NAME: ${{ vars.REPOSITORY_NAME }}
-      ADDITIONAL_VARIABLES: "${{ format('{ \"SERVER_IMAGE_NAMES\": \"server:{0}.{1}.{2}\", \"CLIENT_IMAGE_NAMES\": \"client:{0}.{1}.{2}\" }', needs.release.outputs.major-tag, needs.release.outputs.minor-tag, needs.release.outputs.patch-tag) }}"
+      ADDITIONAL_VARIABLES: "${{ format('{ \"SERVER_IMAGE_NAMES\": \"server:{0}\", \"CLIENT_IMAGE_NAMES\": \"client:{0}\" }', needs.release.outputs.version) }}"
     secrets:
       GIT_MIRROR_TOKEN: ${{ secrets.GIT_MIRROR_TOKEN }}
