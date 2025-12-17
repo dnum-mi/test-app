@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.1-rc.4](https://github.com/dnum-mi/test-app/compare/v0.1.1-rc.3...v0.1.1-rc.4) (2025-12-17)
+
+
+### Bug Fixes
+
+* fix-008 ([969e8ed](https://github.com/dnum-mi/test-app/commit/969e8ede8c46400a688eedf7de443d48bf0e1721))
+
 ## [0.1.1-rc.3](https://github.com/dnum-mi/test-app/compare/v0.1.1-rc.2...v0.1.1-rc.3) (2025-12-16)
 
 
