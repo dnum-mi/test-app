@@ -136,9 +136,7 @@ jobs:
     with:
       GITLAB_URL: ${{ vars.GITLAB_URL }}
       GIT_MIRROR_PROJECT_ID: ${{ vars.GIT_MIRROR_PROJECT_ID }}
-      BRANCH_TO_SYNC: ${{ needs.release.outputs.version }}
+      BRANCH_TO_SYNC: ${{ format('v{0}', needs.release.outputs.version) }}
       REPOSITORY_NAME: ${{ vars.REPOSITORY_NAME }}
-      # ADDITIONAL_VARIABLES: "{ ${{ format('\"SERVER_IMAGE_NAMES\": \"server:{0}\", \"CLIENT_IMAGE_NAMES\": \"client:{0}\"}', needs.release.outputs.version) }} }"
-      ADDITIONAL_VARIABLES: '{"SERVER_IMAGE_NAMES": "server:${{ needs.release.outputs.version }}", "CLIENT_IMAGE_NAMES": "client:${{ needs.release.outputs.version}}"}'
     secrets:
       GIT_MIRROR_TOKEN: ${{ secrets.GIT_MIRROR_TOKEN }}
