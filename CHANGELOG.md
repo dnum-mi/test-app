@@ -1,5 +1,26 @@
 # Changelog
 
+## [0.1.1-rc.6](https://github.com/dnum-mi/test-app/compare/v0.1.1-rc.5...v0.1.1-rc.6) (2026-01-28)
+
+
+### Bug Fixes
+
+* fix-001 ([c87d937](https://github.com/dnum-mi/test-app/commit/c87d937246732d35a249dc50c44e54455fc92611))
+* fix-002 ([4366665](https://github.com/dnum-mi/test-app/commit/4366665fcf9e3f53a2e428f5ec7f73ab69c92e77))
+* fix-003 ([3c6e3ea](https://github.com/dnum-mi/test-app/commit/3c6e3ea7c67acb78c0867b878c57ef5cdc42ba81))
+* fix-004 ([f0dcbc3](https://github.com/dnum-mi/test-app/commit/f0dcbc364f7e0cf554d529eb77f4a64c549a02f9))
+* fix-005 ([9109702](https://github.com/dnum-mi/test-app/commit/91097023027dec2d7187bb830750d8cac9f269f8))
+* fix-006 ([2e801c5](https://github.com/dnum-mi/test-app/commit/2e801c52a1237e421cef87a8b90f6daee1157c61))
+* fix-007 ([46b3d01](https://github.com/dnum-mi/test-app/commit/46b3d0119751ab620c72a0152793fd99b398e3d4))
+* fix-008 ([da16a3b](https://github.com/dnum-mi/test-app/commit/da16a3b89bb6d980a5dd550b4b6e4ae69555720a))
+* fix-009 ([affeaf0](https://github.com/dnum-mi/test-app/commit/affeaf0548426d4c2a9c662a0a0770ae4a010b9f))
+* fix-010 ([5b99bae](https://github.com/dnum-mi/test-app/commit/5b99baec4427b35fab75a700261f93ee49f27321))
+
+
+### Dependencies
+
+* upgrade dependencies ([6a2d8ce](https://github.com/dnum-mi/test-app/commit/6a2d8ce06c59b21f00c1f2077a3dec6406798f81))
+
 ## [0.1.1-rc.5](https://github.com/dnum-mi/test-app/compare/v0.1.1-rc.4...v0.1.1-rc.5) (2025-12-18)
 
 
