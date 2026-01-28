@@ -55,6 +55,15 @@ jobs:
     - name: Exposing env vars
       run: echo "Exposing env vars"
 
+  lint-commits:
+    uses: dnum-mi/fabnum-cicd/.github/workflows/lint-commits.yml@main
+    if: ${{ !github.event.pull_request.draft }}
+    needs:
+    - path-filter
+    permissions:
+      pull-requests: read
+      contents: read
+
   build-docker:
     uses: dnum-mi/fabnum-cicd/.github/workflows/build-docker.yml@main
     needs:
