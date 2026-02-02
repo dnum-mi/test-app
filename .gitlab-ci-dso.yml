@@ -34,8 +34,8 @@ docker-build-client:
   variables:
     WORKING_DIR: ./apps/client
     DOCKERFILE: ./apps/client/Dockerfile
+    IMAGE_NAMES: ""  # Overridden in before_script
   before_script:
-    - !reference [.kaniko:build-push, before_script]
     - SHORT_SHA=$(echo $CI_COMMIT_SHA | cut -c1-7)
     - TAGS="client:$SHORT_SHA"
     - |
@@ -58,8 +58,8 @@ docker-build-server:
   variables:
     WORKING_DIR: ./apps/server
     DOCKERFILE: ./apps/server/Dockerfile
+    IMAGE_NAMES: ""  # Overridden in before_script
   before_script:
-    - !reference [.kaniko:build-push, before_script]
     - SHORT_SHA=$(echo $CI_COMMIT_SHA | cut -c1-7)
     - TAGS="server:$SHORT_SHA"
     - |
