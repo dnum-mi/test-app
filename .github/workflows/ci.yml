@@ -58,11 +58,39 @@ jobs:
   lint-commits:
     uses: dnum-mi/fabnum-cicd/.github/workflows/lint-commits.yml@main
     if: ${{ !github.event.pull_request.draft }}
-    needs:
-    - path-filter
     permissions:
       pull-requests: read
       contents: read
+
+  scan-sonarqube:
+    uses: dnum-mi/fabnum-cicd/.github/workflows/scan-sonarqube.yml@main
+    needs:
+    - expose-vars
+    permissions:
+      issues: write
+      pull-requests: write
+      contents: read
+    with:
+      SONAR_URL: https://sonarqube.fabrique-numerique.fr
+      SOURCES_PATH: apps
+      SONAR_EXTRA_ARGS: -Dsonar.coverage.exclusions=**/*.spec.js,**/*.spec.ts,**/*.vue,**/assets/** -Dsonar.exclusions=**/*.spec.js,**/*.spec.ts,**/*.vue
+    secrets:
+      SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+      SONAR_PROJECT_KEY: ${{ secrets.SONAR_PROJECT_KEY }}
+
+  scan-trivy-conf:
+    uses: dnum-mi/fabnum-cicd/.github/workflows/scan-trivy.yml@main
+    needs:
+    - expose-vars
+    permissions:
+      contents: read
+      security-events: write
+      pull-requests: write
+      packages: read
+    with:
+      PATH: ./
+      PR_NUMBER: ${{ github.event.pull_request.number || github.event.number || '' }}
+      GITHUB_SECURITY_TAB: false
 
   build-docker:
     uses: dnum-mi/fabnum-cicd/.github/workflows/build-docker.yml@main
@@ -90,38 +118,6 @@ jobs:
       LATEST_TAG: ${{ needs.expose-vars.outputs.LATEST_TAG == 'true' }}
       USE_QEMU: ${{ needs.expose-vars.outputs.USE_QEMU == 'true' }}
     secrets: inherit
-
-  # scan-sonarqube:
-  #   uses: dnum-mi/fabnum-cicd/.github/workflows/scan-sonarqube.yml@main
-  #   needs:
-  #   - expose-vars
-  #   - build-docker
-  #   permissions:
-  #     issues: write
-  #     pull-requests: write
-  #     contents: read
-  #   with:
-  #     SONAR_URL: https://sonarqube.example.com
-  #     SOURCES_PATH: apps,packages
-  #     SONAR_EXTRA_ARGS: -Dsonar.coverage.exclusions=**/*.spec.js,**/*.spec.ts,**/*.vue,**/assets/** -Dsonar.exclusions=**/*.spec.js,**/*.spec.ts,**/*.vue
-  #   secrets:
-  #     SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-  #     SONAR_PROJECT_KEY: ${{ secrets.SONAR_PROJECT_KEY }}
-
-  scan-trivy-conf:
-    uses: dnum-mi/fabnum-cicd/.github/workflows/scan-trivy.yml@main
-    needs:
-    - expose-vars
-    - build-docker
-    permissions:
-      contents: read
-      security-events: write
-      pull-requests: write
-      packages: read
-    with:
-      PATH: ./
-      PR_NUMBER: ${{ github.event.pull_request.number || github.event.number || '' }}
-      GITHUB_SECURITY_TAB: false
 
   scan-trivy-images:
     uses: dnum-mi/fabnum-cicd/.github/workflows/scan-trivy.yml@main
