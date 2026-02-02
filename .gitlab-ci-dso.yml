@@ -17,7 +17,7 @@ stages:
   - read-secret
   - check-quality
   - docker-build
-  - helm-package
+  # - helm-package # Uncomment if helm-package-push is enabled (for monorepo including charts)
 
 read_secret:
   stage: read-secret
