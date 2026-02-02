@@ -1,6 +1,6 @@
 {
   "name": "test-app",
-  "version": "0.1.1-rc.8",
+  "version": "0.1.1-rc.9",
   "license": "ISC",
   "type": "module",
   "scripts": {
