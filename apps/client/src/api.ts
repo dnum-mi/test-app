@@ -1,4 +1,4 @@
-const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8081/api'
+const apiUrl = import.meta.env.VITE_API_URL || 'runtime-vite-api-url'
 
 export function callApi(btn: HTMLButtonElement, msg: HTMLParagraphElement) {
   const getMsg = async () => {
