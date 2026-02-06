@@ -1,5 +1,38 @@
 # Changelog
 
+## [0.1.1](https://github.com/dnum-mi/test-app/compare/v0.1.0...v0.1.1) (2026-02-06)
+
+
+### Bug Fixes
+
+* fix-001 ([0a3c424](https://github.com/dnum-mi/test-app/commit/0a3c4242bc34bd91826fb22d2bb08aa7e17840a7))
+* fix-002 ([adf92e1](https://github.com/dnum-mi/test-app/commit/adf92e13c7227c1dbb9680373001c98416dec65a))
+* fix-003 ([7437cf4](https://github.com/dnum-mi/test-app/commit/7437cf4b6c3c5fdfd1b4e1570076524cf2407a7f))
+* fix-004 ([ac40ee9](https://github.com/dnum-mi/test-app/commit/ac40ee9962fbdf7a96abccf9fbbadc78959be179))
+* fix-005 ([c409dec](https://github.com/dnum-mi/test-app/commit/c409decbb9c0e5be3636a7a3381bed0da82e4cc1))
+* fix-006 ([af3f0e7](https://github.com/dnum-mi/test-app/commit/af3f0e78d2f059330ece59ab417408d6d0659934))
+* fix-007 ([e2e8d03](https://github.com/dnum-mi/test-app/commit/e2e8d0353b82f6ed2bfa8e634068b74570c2fb06))
+* fix-008 ([f264f94](https://github.com/dnum-mi/test-app/commit/f264f94cf2be21cf1d4f523476a635af590de0e7))
+* fix-009 ([2e01f14](https://github.com/dnum-mi/test-app/commit/2e01f14ac5f82696a8a22ce52da031086532fac3))
+* fix-010 ([15c1432](https://github.com/dnum-mi/test-app/commit/15c14328b78fdb80138f16fd03e721500d115a6b))
+* fix-011 ([e21d2f2](https://github.com/dnum-mi/test-app/commit/e21d2f253a0ba9971a8a706a151848738f6f1454))
+* fix-012 ([7056593](https://github.com/dnum-mi/test-app/commit/70565930d5723a8774a699fef7c4c588cb682870))
+* fix-013 ([9f807ca](https://github.com/dnum-mi/test-app/commit/9f807ca081e6dbc76844a003c43983c407b94815))
+* fix-014 ([57bdbad](https://github.com/dnum-mi/test-app/commit/57bdbada194703139547bd5da4f860fcd5cbb9e1))
+* fix-015 ([f0c1485](https://github.com/dnum-mi/test-app/commit/f0c148591a663dbe114a6903e22589926433d2d0))
+* fix-016 ([1a432b7](https://github.com/dnum-mi/test-app/commit/1a432b7b59f6cb16e911f930365840f84d0b2373))
+* fix-017 ([89c6fef](https://github.com/dnum-mi/test-app/commit/89c6fef5ca6986b14af80fe919a7c98ba81f3713))
+* fix-018 ([7842e18](https://github.com/dnum-mi/test-app/commit/7842e1846026be4e1f9d077213acd6763b9ecd3f))
+* fix-019 ([dbea553](https://github.com/dnum-mi/test-app/commit/dbea553d5ce5ad25a5866ff36ede07d91fd00a24))
+* fix-020 ([0e90d5a](https://github.com/dnum-mi/test-app/commit/0e90d5aea90969c7f8ca45637e3bb5fd32ecec0c))
+* fix-021 ([6be09af](https://github.com/dnum-mi/test-app/commit/6be09afbefafb3bffc05c5f98df61bcacf8eb8bc))
+* fix-022 ([6be1cff](https://github.com/dnum-mi/test-app/commit/6be1cffb95cae716c9c653bb4dce5067aa5cf962))
+
+
+### Dependencies
+
+* upgrade dependencies ([6a2d8ce](https://github.com/dnum-mi/test-app/commit/6a2d8ce06c59b21f00c1f2077a3dec6406798f81))
+
 ## [0.1.1-rc.18](https://github.com/dnum-mi/test-app/compare/v0.1.1-rc.17...v0.1.1-rc.18) (2026-02-06)
 
 
