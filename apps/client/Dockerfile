@@ -38,6 +38,6 @@ FROM ${PROD_IMAGE} AS prod
 USER 0
 COPY --chown=1001:0 --chmod=770 --from=build /app/dist /usr/share/nginx/html/
 COPY --chown=1001:0 --chmod=660 ./nginx/nginx-static.conf /etc/nginx/conf.d/default.conf
-COPY --chown=1001:0 ./nginx/entrypoint.sh /docker-entrypoint-initdb.d/load-env.sh
+COPY --chown=1001:0 ./nginx/entrypoint.sh /docker-entrypoint.d/load-env.sh
 USER 1001
 EXPOSE 8080
