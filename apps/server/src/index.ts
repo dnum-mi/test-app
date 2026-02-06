@@ -7,10 +7,18 @@ const CORS_HEADERS = {
 }
 
 const server = Bun.serve({
-  port: 8081,
+  port: process.env.API_PORT || 8081,
   fetch(request) {
     console.log(`Received request: ${request.method} ${request.url}`)
-    return new Response(JSON.stringify({ docUrl: 'https://this-is-tobi.com', githubUrl: 'https://github.com/this-is-tobi' }), CORS_HEADERS)
+    return new Response(
+      JSON.stringify({
+        githubUrls: [
+          'https://github.com/dnum-mi',
+          'https://github.com/IA-Generative',
+        ]
+      }), 
+      CORS_HEADERS
+    )
   },
 })
 
