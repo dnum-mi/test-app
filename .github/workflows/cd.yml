@@ -131,8 +131,6 @@ jobs:
     - build-docker
     - bump-chart
     if: ${{ needs.release.outputs.release-created == 'true' }}
-    permissions:
-      contents: write
     with:
       GITLAB_URL: ${{ vars.GITLAB_URL }}
       GIT_MIRROR_PROJECT_ID: ${{ vars.GIT_MIRROR_PROJECT_ID }}
