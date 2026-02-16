@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.2-rc](https://github.com/dnum-mi/test-app/compare/v0.1.1...v0.1.2-rc) (2026-02-16)
+
+
+### Bug Fixes
+
+* fix-023 ([b6c6df7](https://github.com/dnum-mi/test-app/commit/b6c6df7a9fe2f3cbb8ce8755b77b4d68bfc73a82))
+
 ## [0.1.1](https://github.com/dnum-mi/test-app/compare/v0.1.0...v0.1.1) (2026-02-06)
 
 
