@@ -31,7 +31,7 @@ jobs:
       ci: ${{ steps.filter.outputs.ci }}
     steps:
     - name: Checks-out repository
-      uses: actions/checkout@v5
+      uses: actions/checkout@v6
 
     - name: Check updated files paths
       uses: dorny/paths-filter@v3
@@ -59,14 +59,14 @@ jobs:
       run: echo "Exposing env vars"
 
   lint-commits:
-    uses: dnum-mi/fabnum-cicd/.github/workflows/lint-commits.yml@main
+    uses: dnum-mi/fabnum-cicd/.github/workflows/lint-commits.yml@v0
     if: ${{ !github.event.pull_request.draft }}
     permissions:
       pull-requests: read
       contents: read
 
   scan-sonarqube:
-    uses: dnum-mi/fabnum-cicd/.github/workflows/scan-sonarqube.yml@main
+    uses: dnum-mi/fabnum-cicd/.github/workflows/scan-sonarqube.yml@v0
     needs:
     - expose-vars
     permissions:
@@ -82,7 +82,7 @@ jobs:
       SONAR_PROJECT_KEY: ${{ secrets.SONAR_PROJECT_KEY }}
 
   scan-trivy-conf:
-    uses: dnum-mi/fabnum-cicd/.github/workflows/scan-trivy.yml@main
+    uses: dnum-mi/fabnum-cicd/.github/workflows/scan-trivy.yml@v0
     needs:
     - expose-vars
     permissions:
@@ -96,7 +96,7 @@ jobs:
       GITHUB_SECURITY_TAB: false
 
   build-docker:
-    uses: dnum-mi/fabnum-cicd/.github/workflows/build-docker.yml@main
+    uses: dnum-mi/fabnum-cicd/.github/workflows/build-docker.yml@v0
     needs:
     - expose-vars
     permissions:
@@ -120,10 +120,12 @@ jobs:
       BUILD_ARM64: ${{ needs.expose-vars.outputs.BUILD_ARM64 == 'true' }}
       LATEST_TAG: ${{ needs.expose-vars.outputs.LATEST_TAG == 'true' }}
       USE_QEMU: ${{ needs.expose-vars.outputs.USE_QEMU == 'true' }}
+      BUILD_ARGS: |
+        APP_VERSION=${{ needs.expose-vars.outputs.IMAGE_TAG }}
     secrets: inherit
 
   scan-trivy-images:
-    uses: dnum-mi/fabnum-cicd/.github/workflows/scan-trivy.yml@main
+    uses: dnum-mi/fabnum-cicd/.github/workflows/scan-trivy.yml@v0
     needs:
     - expose-vars
     - build-docker
