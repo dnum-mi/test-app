@@ -23,7 +23,7 @@ on:
 
 jobs:
   cleanup-cache:
-    uses: dnum-mi/fabnum-cicd/.github/workflows/clean-cache.yml@main
+    uses: dnum-mi/fabnum-cicd/.github/workflows/clean-cache.yml@v0
     with:
       PR_NUMBER: ${{ github.event.pull_request.number }}
       BRANCH_NAME: ${{ github.event.pull_request.head.ref }}
@@ -32,7 +32,7 @@ jobs:
       CLEAN_ORPHANED_GHCR_IMAGE: false
     secrets: inherit
   cleanup-images:
-    uses: dnum-mi/fabnum-cicd/.github/workflows/clean-cache.yml@main
+    uses: dnum-mi/fabnum-cicd/.github/workflows/clean-cache.yml@v0
     strategy:
       matrix:
         images:
@@ -48,7 +48,7 @@ jobs:
     secrets: inherit
 
   cleanup-orphaned-images:
-    uses: dnum-mi/fabnum-cicd/.github/workflows/clean-cache.yml@main
+    uses: dnum-mi/fabnum-cicd/.github/workflows/clean-cache.yml@v0
     strategy:
       matrix:
         images:
