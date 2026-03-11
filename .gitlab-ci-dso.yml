@@ -3,6 +3,7 @@ include:
     file:
       - vault-ci.yml
       - kaniko-ci.yml
+      - helm-ci.yml
       - sonar-ci.yml
     ref: main
 
@@ -17,7 +18,7 @@ stages:
   - read-secret
   - check-quality
   - docker-build
-  # - helm-package # Uncomment if helm-package-push is enabled (for monorepo including charts)
+  - helm-package
 
 read_secret:
   stage: read-secret
@@ -78,7 +79,7 @@ docker-build-server:
       export IMAGE_NAMES="$TAGS"
       echo "Building with tags: $IMAGE_NAMES"
 
-.helm-package-push:
+.helm-package-push: # Remove `.` at the start of the job if helm-package-push is enabled (for monorepo including charts)
   stage: helm-package
   extends: .helm:build-push
   only:
