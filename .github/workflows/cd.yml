@@ -13,7 +13,7 @@ env:
   LATEST_TAG: ${{ github.ref_name == 'main' }}
   USE_QEMU: true
   TAG_MAJOR_AND_MINOR: false
-  AUTOMERGE_PRERELEASE: false
+  AUTOMERGE_PRERELEASE: true
   AUTOMERGE_RELEASE: false
   PRERELEASE_BRANCH: develop
   RELEASE_BRANCH: main
@@ -120,6 +120,8 @@ jobs:
       APP_VERSION: ${{ needs.release.outputs.version }}
       UPGRADE_TYPE: ${{ github.ref_name == 'develop' && 'prerelease' || github.ref_name == 'main' && 'patch' }}
       PRERELEASE_IDENTIFIER: rc
+      AUTOMERGE_PRERELEASE: ${{ needs.expose-vars.outputs.AUTOMERGE_PRERELEASE == 'true' }}
+      AUTOMERGE_RELEASE: ${{ needs.expose-vars.outputs.AUTOMERGE_RELEASE == 'true' }}
     secrets:
       GH_PAT: ${{ secrets.GH_PAT }}
 
