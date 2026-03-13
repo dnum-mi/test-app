@@ -67,8 +67,8 @@ jobs:
       PRERELEASE_CONFIG_FILE: ${{ needs.expose-vars.outputs.PRERELEASE_CONFIG_FILE }}
       PRERELEASE_MANIFEST_FILE: ${{ needs.expose-vars.outputs.PRERELEASE_MANIFEST_FILE }}
       ENABLE_PRERELEASE: ${{ needs.expose-vars.outputs.ENABLE_PRERELEASE == 'true' }}
-    # secrets:
-    #   GH_PAT: ${{ secrets.GH_PAT }} # Required for automerge PRs
+    secrets:
+      GH_PAT: ${{ secrets.GH_PAT }} # Required for automerge PRs
 
   build-docker:
     uses: dnum-mi/fabnum-cicd/.github/workflows/build-docker.yml@v0
