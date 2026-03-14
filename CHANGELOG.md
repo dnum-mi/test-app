@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.1.3](https://github.com/dnum-mi/test-app/compare/v0.1.2...v0.1.3) (2026-03-14)
+
+
+### Bug Fixes
+
+* fix-025 ([19472b2](https://github.com/dnum-mi/test-app/commit/19472b294721f126fcf675eb9b92ba0190fcdf8b))
+* fix-026 ([7df8109](https://github.com/dnum-mi/test-app/commit/7df810943d6e4ae132b44d4f27929ae1baeda7bf))
+* fix-027 ([83e6778](https://github.com/dnum-mi/test-app/commit/83e6778fbf5a0eed4e91ef37e5a61d7db64c4b27))
+* fix-028 ([edecf8c](https://github.com/dnum-mi/test-app/commit/edecf8c69c831a1ae233d4d531b50a377363e5a7))
+* fix-029 ([ef76ba6](https://github.com/dnum-mi/test-app/commit/ef76ba626fcfbeffd59f0ceab848363b5b641317))
+* fix-030 ([a862567](https://github.com/dnum-mi/test-app/commit/a862567a4a89f1f9b3e503a0093f14c264458804))
+
 ## [0.1.3-rc.5](https://github.com/dnum-mi/test-app/compare/v0.1.3-rc.4...v0.1.3-rc.5) (2026-03-14)
 
 
