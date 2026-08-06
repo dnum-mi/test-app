@@ -8,8 +8,7 @@ include:
     ref: main
 
 default:
-  image: alpine:3.23.3
-
+  image: alpine:3.23
 variables:
   REGISTRY_URL: ${REGISTRY_HOST}/${PROJECT_PATH}
   CHARTS_DIR: ./charts
@@ -85,3 +84,4 @@ docker-build-server:
   only:
     - tags
     - main
+  image: alpine/helm:4.1.3

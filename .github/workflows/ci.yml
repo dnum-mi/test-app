@@ -17,6 +17,7 @@ env:
   LATEST_TAG: false
   USE_QEMU: true
   IMAGE_TAG: ${{ (github.event.pull_request.number && format('pr-{0}', github.event.pull_request.number)) || (github.event.number && format('pr-{0}', github.event.number)) || '' }}
+  CT_CONF_PATH: ci/configs/ct.yaml
 
 jobs:
   path-filter:
@@ -29,6 +30,7 @@ jobs:
       apps: ${{ steps.filter.outputs.apps }}
       packages: ${{ steps.filter.outputs.packages }}
       ci: ${{ steps.filter.outputs.ci }}
+      helm: ${{ steps.filter.outputs.helm }}
     steps:
     - name: Checks-out repository
       uses: actions/checkout@v6
@@ -44,6 +46,8 @@ jobs:
             - 'packages/**'
           ci:
             - '.github/workflows/**'
+          helm:
+            - 'helm/**'
 
   expose-vars:
     runs-on: ubuntu-latest
@@ -54,6 +58,7 @@ jobs:
       LATEST_TAG: ${{ env.LATEST_TAG }}
       USE_QEMU: ${{ env.USE_QEMU }}
       IMAGE_TAG: ${{ env.IMAGE_TAG }}
+      CT_CONF_PATH: ${{ env.CT_CONF_PATH }}
     steps:
     - name: Exposing env vars
       run: echo "Exposing env vars"
@@ -148,6 +153,44 @@ jobs:
       PR_NUMBER: ${{ github.event.pull_request.number || github.event.number || '' }}
       GITHUB_SECURITY_TAB: false
 
+  lint-helm-docs:
+    uses: dnum-mi/fabnum-cicd/.github/workflows/lint-helm.yml@v0
+    if: ${{ needs.path-filter.outputs.helm == 'true' }}
+    needs:
+    - path-filter
+    - expose-vars
+    permissions:
+      contents: read
+    with:
+      HELM_DOCS_VERSION: v1.14.2
+      CT_CONF_PATH: ${{ needs.expose-vars.outputs.CT_CONF_PATH }}
+      CHARTS_DIR: helm
+      LINT_CHARTS: false
+      LINT_DOCS: true
+
+  lint-helm-charts:
+    uses: dnum-mi/fabnum-cicd/.github/workflows/lint-helm.yml@v0
+    if: ${{ needs.path-filter.outputs.helm == 'true' }}
+    needs:
+    - path-filter
+    - expose-vars
+    permissions:
+      contents: read
+    with:
+      HELM_DOCS_VERSION: v1.14.2
+      CT_CONF_PATH: ${{ needs.expose-vars.outputs.CT_CONF_PATH }}
+      LINT_CHARTS: true
+      LINT_DOCS: false
+
+  test-helm-charts:
+    uses: dnum-mi/fabnum-cicd/.github/workflows/test-helm.yml@v0
+    if: ${{ needs.path-filter.outputs.helm == 'true' }}
+    needs:
+    - path-filter
+    - expose-vars
+    with:
+      CT_CONF_PATH: ${{ needs.expose-vars.outputs.CT_CONF_PATH }}
+
   # Workaround for required status check in protection branches (see. https://github.com/orgs/community/discussions/13690)
   all-jobs-passed:
     name: Check jobs status
@@ -160,6 +203,9 @@ jobs:
     # - scan-sonarqube
     - scan-trivy-conf
     - scan-trivy-images
+    - lint-helm-docs
+    - lint-helm-charts
+    - test-helm-charts
     steps:
     - name: Check status of all required jobs
       run: |-

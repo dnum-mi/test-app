@@ -1,0 +1,14 @@
+global:
+  ingress:
+    enabled: true
+    annotations: {}
+    labels: {}
+
+server:
+  env:
+    API_PORT: "8080"
+
+client:
+  envFrom:
+  - secretRef:
+      name: test-app-vso
