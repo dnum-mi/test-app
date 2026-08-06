@@ -15,6 +15,9 @@ env:
   TAG_MAJOR_AND_MINOR: false
   AUTOMERGE_PRERELEASE: true
   AUTOMERGE_RELEASE: false
+  # 'auto' needs 'Allow auto-merge' in Settings > General, which private repos
+  # on the free plan can't enable. 'admin' merges immediately instead.
+  AUTOMERGE_METHOD: admin
   PRERELEASE_BRANCH: develop
   RELEASE_BRANCH: main
   REBASE_PRERELEASE_BRANCH: true
@@ -35,6 +38,7 @@ jobs:
       TAG_MAJOR_AND_MINOR: ${{ env.TAG_MAJOR_AND_MINOR }}
       AUTOMERGE_PRERELEASE: ${{ env.AUTOMERGE_PRERELEASE }}
       AUTOMERGE_RELEASE: ${{ env.AUTOMERGE_RELEASE }}
+      AUTOMERGE_METHOD: ${{ env.AUTOMERGE_METHOD }}
       PRERELEASE_BRANCH: ${{ env.PRERELEASE_BRANCH }}
       RELEASE_BRANCH: ${{ env.RELEASE_BRANCH }}
       REBASE_PRERELEASE_BRANCH: ${{ env.REBASE_PRERELEASE_BRANCH }}
@@ -59,6 +63,7 @@ jobs:
       TAG_MAJOR_AND_MINOR: ${{ needs.expose-vars.outputs.TAG_MAJOR_AND_MINOR == 'true' }}
       AUTOMERGE_PRERELEASE: ${{ needs.expose-vars.outputs.AUTOMERGE_PRERELEASE == 'true' }}
       AUTOMERGE_RELEASE: ${{ needs.expose-vars.outputs.AUTOMERGE_RELEASE == 'true' }}
+      AUTOMERGE_METHOD: ${{ needs.expose-vars.outputs.AUTOMERGE_METHOD }}
       PRERELEASE_BRANCH: ${{ needs.expose-vars.outputs.PRERELEASE_BRANCH }}
       RELEASE_BRANCH: ${{ needs.expose-vars.outputs.RELEASE_BRANCH }}
       REBASE_PRERELEASE_BRANCH: ${{ needs.expose-vars.outputs.REBASE_PRERELEASE_BRANCH == 'true' }}
@@ -68,7 +73,8 @@ jobs:
       PRERELEASE_MANIFEST_FILE: ${{ needs.expose-vars.outputs.PRERELEASE_MANIFEST_FILE }}
       ENABLE_PRERELEASE: ${{ needs.expose-vars.outputs.ENABLE_PRERELEASE == 'true' }}
     secrets:
-      GH_PAT: ${{ secrets.GH_PAT }} # Required for automerge PRs
+      APP_CLIENT_ID: ${{ secrets.APP_CLIENT_ID }}
+      APP_PRIVATE_KEY: ${{ secrets.APP_PRIVATE_KEY }}
 
   build-docker:
     uses: dnum-mi/fabnum-cicd/.github/workflows/build-docker.yml@v0
@@ -102,7 +108,31 @@ jobs:
         APP_VERSION=${{ needs.release.outputs.version }}
     secrets: inherit
 
-  bump-chart:
+  bump-chart-local:
+    uses: dnum-mi/fabnum-cicd/.github/workflows/update-helm-chart.yml@v0
+    needs:
+    - expose-vars
+    - release
+    - build-docker
+    if: ${{ needs.release.outputs.release-created == 'true' }}
+    permissions:
+      pull-requests: write
+      contents: write
+    with:
+      RUN_MODE: local
+      CHART_DIR: ./
+      CHART_NAME: helm
+      APP_VERSION: ${{ needs.release.outputs.version }}
+      UPGRADE_TYPE: ${{ github.ref_name == 'develop' && 'prerelease' || github.ref_name == 'main' && 'patch' }}
+      PRERELEASE_IDENTIFIER: rc
+      AUTOMERGE_PRERELEASE: ${{ needs.expose-vars.outputs.AUTOMERGE_PRERELEASE == 'true' }}
+      AUTOMERGE_RELEASE: ${{ needs.expose-vars.outputs.AUTOMERGE_RELEASE == 'true' }}
+      AUTOMERGE_METHOD: ${{ needs.expose-vars.outputs.AUTOMERGE_METHOD }}
+    secrets:
+      APP_CLIENT_ID: ${{ secrets.APP_CLIENT_ID }}
+      APP_PRIVATE_KEY: ${{ secrets.APP_PRIVATE_KEY }}
+
+  bump-chart-remote:
     uses: dnum-mi/fabnum-cicd/.github/workflows/update-helm-chart.yml@v0
     needs:
     - expose-vars
@@ -116,14 +146,39 @@ jobs:
       RUN_MODE: caller
       WORKFLOW_NAME: update-chart.yml
       CHART_REPO: dnum-mi/test-helm
+      CHART_DIR: ./charts
       CHART_NAME: test-app
       APP_VERSION: ${{ needs.release.outputs.version }}
       UPGRADE_TYPE: ${{ github.ref_name == 'develop' && 'prerelease' || github.ref_name == 'main' && 'patch' }}
       PRERELEASE_IDENTIFIER: rc
       AUTOMERGE_PRERELEASE: ${{ needs.expose-vars.outputs.AUTOMERGE_PRERELEASE == 'true' }}
       AUTOMERGE_RELEASE: ${{ needs.expose-vars.outputs.AUTOMERGE_RELEASE == 'true' }}
+      AUTOMERGE_METHOD: ${{ needs.expose-vars.outputs.AUTOMERGE_METHOD }}
     secrets:
-      GH_PAT: ${{ secrets.GH_PAT }}
+      APP_CLIENT_ID: ${{ secrets.APP_CLIENT_ID }}
+      APP_PRIVATE_KEY: ${{ secrets.APP_PRIVATE_KEY }}
+
+  release-charts:
+    uses: dnum-mi/fabnum-cicd/.github/workflows/release-helm.yml@v0
+    permissions:
+      contents: read
+      packages: write
+    needs:
+    - expose-vars
+    - release
+    - build-docker
+    - bump-chart-local
+    with:
+      # Monorepo: the chart shares the app's tag namespace, so chart-releaser's
+      # tag-based change detection is unreliable - package the exact version
+      # bumped by bump-chart-local instead.
+      MODE: local
+      CHARTS_DIR: ./
+      CHART_NAME: helm
+      CHART_VERSION: ${{ needs.bump-chart-local.outputs.chart-version }}
+      APP_VERSION: ${{ needs.release.outputs.version }}
+      CHECKOUT_REF: ${{ needs.bump-chart-local.outputs.commit-sha }}
+      HELM_REPOS: "bitnami=https://charts.bitnami.com/bitnami,hashicorp=https://helm.releases.hashicorp.com,cnpg=https://cloudnative-pg.github.io/charts"
 
   sync-cpin:
     uses: dnum-mi/fabnum-cicd/.github/workflows/sync-cpin.yml@v0
@@ -131,7 +186,9 @@ jobs:
     - expose-vars
     - release
     - build-docker
-    - bump-chart
+    - bump-chart-local
+    - bump-chart-remote
+    - release-charts
     if: ${{ needs.release.outputs.release-created == 'true' }}
     with:
       GITLAB_URL: ${{ vars.GITLAB_URL }}

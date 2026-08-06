@@ -1,0 +1,40 @@
+global:
+  ingress:
+    hosts:
+    - backend:
+        serviceName: "test-app-server"
+        portNumber: 80
+      name: "tobi-preprod.sdid-app-hp.cpin.numerique-interieur.com"
+      pathType: "Prefix"
+      path: "/api"
+    - backend:
+        serviceName: "test-app-client"
+        portNumber: 80
+      name: "tobi-preprod.sdid-app-hp.cpin.numerique-interieur.com"
+      pathType: "Prefix"
+      path: "/"
+    tls:
+    - secretName: "tobi-preprod.sdid-app-hp.cpin.numerique-interieur.com-tls"
+      hosts:
+      - "tobi-preprod.sdid-app-hp.cpin.numerique-interieur.com"
+
+extraObjects:
+- apiVersion: "secrets.hashicorp.com/v1beta1"
+  kind: "VaultStaticSecret"
+  metadata:
+    name: "test-app-vso"
+  spec:
+    mount: "tobi"
+    vaultAuthRef: "vault-auth"
+    path: "preprod/test-app"
+    type: "kv-v2"
+    refreshAfter: "30s"
+    hmacSecretData: true
+    rolloutRestartTargets:
+    - kind: "Deployment"
+      name: "test-app-server"
+    destination:
+      create: true
+      overwrite: true
+      name: "test-app-vso"
+      type: "Opaque"
