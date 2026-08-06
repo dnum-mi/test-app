@@ -166,7 +166,11 @@ jobs:
   release-charts:
     uses: dnum-mi/fabnum-cicd/.github/workflows/release-helm.yml@v0
     permissions:
-      contents: read
+      # release-helm.yml's nested 'release' (chart-releaser mode) job always
+      # declares 'contents: write', even though we run in 'local' mode and it
+      # never actually executes - GitHub validates the whole call graph's
+      # permissions upfront, not per 'if:'.
+      contents: write
       packages: write
     needs:
     - expose-vars
