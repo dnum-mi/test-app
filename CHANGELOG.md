@@ -1,5 +1,19 @@
 # Changelog
 
+## [0.2.0-rc](https://github.com/dnum-mi/test-app/compare/v0.1.3...v0.2.0-rc) (2026-08-07)
+
+
+### Features
+
+* **cd:** switch to GitHub App auth, add monorepo chart alongside remote dispatch ([e15c896](https://github.com/dnum-mi/test-app/commit/e15c896df0dd58676fe3bff7b1130b5c865dfca3))
+
+
+### Bug Fixes
+
+* **cd,ci:** switch to release-helm-local.yml, drop stale attest grants ([61cb810](https://github.com/dnum-mi/test-app/commit/61cb8100a2bfc03248cac97f72913b5573635871))
+* **cd:** grant contents:write to release-charts for release-helm.yml ([6b8470d](https://github.com/dnum-mi/test-app/commit/6b8470d8b3ba0b301ecb4b0da8862de919b920ad))
+* **ci,cd:** grant attestations/id-token permissions to build-docker jobs ([2a89a77](https://github.com/dnum-mi/test-app/commit/2a89a77fc34a03551e6714870a2ff4e9f7adc284))
+
 ## [0.1.3](https://github.com/dnum-mi/test-app/compare/v0.1.2...v0.1.3) (2026-03-14)
 
 
