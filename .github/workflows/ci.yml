@@ -107,11 +107,6 @@ jobs:
     permissions:
       packages: write
       contents: read
-      # build-docker.yml's nested 'attest' job always declares these, even
-      # when PROVENANCE/SBOM/SIGN are all left at their false default - GitHub
-      # validates the whole call graph's permissions upfront, not per 'if:'.
-      attestations: write
-      id-token: write
     strategy:
       matrix:
         services:
