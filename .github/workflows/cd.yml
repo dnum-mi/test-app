@@ -85,11 +85,6 @@ jobs:
     permissions:
       packages: write
       contents: read
-      # build-docker.yml's nested 'attest' job always declares these, even
-      # when PROVENANCE/SBOM/SIGN are all left at their false default - GitHub
-      # validates the whole call graph's permissions upfront, not per 'if:'.
-      attestations: write
-      id-token: write
     strategy:
       matrix:
         service:
@@ -164,13 +159,9 @@ jobs:
       APP_PRIVATE_KEY: ${{ secrets.APP_PRIVATE_KEY }}
 
   release-charts:
-    uses: dnum-mi/fabnum-cicd/.github/workflows/release-helm.yml@v0
+    uses: dnum-mi/fabnum-cicd/.github/workflows/release-helm-local.yml@v0
     permissions:
-      # release-helm.yml's nested 'release' (chart-releaser mode) job always
-      # declares 'contents: write', even though we run in 'local' mode and it
-      # never actually executes - GitHub validates the whole call graph's
-      # permissions upfront, not per 'if:'.
-      contents: write
+      contents: read
       packages: write
     needs:
     - expose-vars
@@ -181,7 +172,6 @@ jobs:
       # Monorepo: the chart shares the app's tag namespace, so chart-releaser's
       # tag-based change detection is unreliable - package the exact version
       # bumped by bump-chart-local instead.
-      MODE: local
       CHARTS_DIR: ./
       CHART_NAME: helm
       CHART_VERSION: ${{ needs.bump-chart-local.outputs.chart-version }}
