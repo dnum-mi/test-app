@@ -25,5 +25,5 @@
     "kube:clean": "ci/kind/run.sh -c clean",
     "kube:delete": "ci/kind/run.sh -c delete"
   },
-  "packageManager": "bun@1.3.10"
+  "packageManager": "bun@1.3.14"
 }

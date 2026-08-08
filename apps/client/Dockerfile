@@ -1,4 +1,4 @@
-ARG BASE_IMAGE=docker.io/oven/bun:1.3.10
+ARG BASE_IMAGE=docker.io/oven/bun:1.3.14
 ARG PROD_IMAGE=docker.io/nginxinc/nginx-unprivileged:1.29.5-alpine
 
 # Base
