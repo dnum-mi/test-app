@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.2.1](https://github.com/dnum-mi/test-app/compare/v0.2.0...v0.2.1) (2026-08-08)
+
+
+### Bug Fixes
+
+* **clean-cache:** grant the union of the called workflow's permissions ([c5aaec4](https://github.com/dnum-mi/test-app/commit/c5aaec412c7be614f4840bb53ab352afd686e7ea))
+* fix-031 ([36350d3](https://github.com/dnum-mi/test-app/commit/36350d38f71a4cf6730ae7ca1d4ee254825c31de))
+* fix-032 ([90b9f9f](https://github.com/dnum-mi/test-app/commit/90b9f9fab656fdfa6d56a4840f4550c8a4a92bf2))
+
 ## [0.2.0-rc.4](https://github.com/dnum-mi/test-app/compare/v0.2.0-rc.3...v0.2.0-rc.4) (2026-08-08)
 
 
