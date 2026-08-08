@@ -24,12 +24,17 @@ on:
 jobs:
   cleanup-cache:
     uses: dnum-mi/fabnum-cicd/.github/workflows/clean-cache.yml@v0
-    # A called workflow can never hold more than its caller grants, so this has
-    # to be declared here even though clean-cache.yml asks for it too - with the
-    # repository default set to read-only, omitting it caps the token at read
-    # and the cache deletion comes back 403.
+    # A called workflow can never hold more than its caller grants, and GitHub
+    # validates *every* job in it at parse time - not just the ones this call's
+    # inputs will actually run. clean-cache.yml contains cleanup-cache
+    # (actions: write) plus cleanup-image and cleanup-orphaned-image
+    # (packages: write), so each call site has to grant the union of all three
+    # or the workflow is rejected outright ("is requesting 'packages: write',
+    # but is only allowed 'packages: none'"). Granting just the scope this call
+    # uses is not enough. actionlint does not catch this.
     permissions:
       actions: write
+      packages: write
     with:
       PR_NUMBER: ${{ github.event.pull_request.number }}
       BRANCH_NAME: ${{ github.event.pull_request.head.ref }}
@@ -39,7 +44,10 @@ jobs:
 
   cleanup-images:
     uses: dnum-mi/fabnum-cicd/.github/workflows/clean-cache.yml@v0
+    # Same union as above - cleanup-cache's actions: write is validated even
+    # though CLEAN_GH_CACHE is false here.
     permissions:
+      actions: write
       packages: write
     strategy:
       matrix:
@@ -56,7 +64,9 @@ jobs:
 
   cleanup-orphaned-images:
     uses: dnum-mi/fabnum-cicd/.github/workflows/clean-cache.yml@v0
+    # Same union as above.
     permissions:
+      actions: write
       packages: write
     strategy:
       matrix:
