@@ -146,17 +146,15 @@ jobs:
       APP_PRIVATE_KEY: ${{ secrets.APP_PRIVATE_KEY }}
 
   bump-chart-remote:
-    uses: dnum-mi/fabnum-cicd/.github/workflows/update-helm-chart.yml@v0
+    uses: dnum-mi/fabnum-cicd/.github/workflows/dispatch-helm-chart.yml@v0
     needs:
     - expose-vars
     - release
     - build-docker
     if: ${{ needs.release.outputs.release-created == 'true' }}
-    permissions:
-      pull-requests: write
-      contents: write
+    # Authenticated entirely by the App token, scoped to test-helm alone.
+    permissions: {}
     with:
-      RUN_MODE: caller
       WORKFLOW_NAME: update-chart.yml
       CHART_REPO: dnum-mi/test-helm
       CHART_DIR: ./charts
