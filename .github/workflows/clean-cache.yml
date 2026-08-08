@@ -1,82 +1,125 @@
 name: Clean GitHub Cache and GHCR Image
 
+# Reconciles caches and container images against what actually exists, once a
+# day, rather than reacting to a pull request closing.
+#
+# A `pull_request: closed` trigger cannot work here: auto-merge is unavailable
+# on this plan, so the pipelines merge with AUTOMERGE_METHOD=admin, which does
+# not wait for checks. The cleanup would fire while the pull request's build is
+# still pushing its image - finding nothing to delete, exiting 0, and letting
+# the image land seconds later with nothing left to remove it. A green run that
+# did nothing.
+#
+# Running once the builds have settled cannot lose that race, and collects
+# whatever earlier runs left behind. It is idempotent: a second pass over an
+# already-clean pull request reports "not found" and exits 0.
+#
+# If this repository moves to a plan with auto-merge, AUTOMERGE_METHOD=auto
+# merges only once checks pass, and a `pull_request: closed` trigger becomes
+# worth adding alongside this as a low-latency fast path.
+
 on:
-  pull_request:
-    types:
-    - closed
-    branches:
-    - "**"
+  schedule:
+  # 01:00 UTC daily, comfortably after the day's builds have settled.
+  - cron: '0 1 * * *'
   workflow_dispatch:
     inputs:
-      IMAGE:
-        description: Name of the image to delete from ghcr.io (eg. 'my-org/my-image:my-tag')
-        required: false
-        type: string
-      PR_NUMBER:
-        description: ID number of the pull request assiocited with the cache
+      LOOKBACK_DAYS:
+        description: How far back to reconcile closed pull requests (raise it once to absorb a backlog)
         required: false
         type: number
-      BRANCH_NAME:
-        description: Branch name assiocited with the cache
-        required: false
-        type: string
+        default: 3
 
 jobs:
-  cleanup-cache:
-    uses: dnum-mi/fabnum-cicd/.github/workflows/clean-cache.yml@v0
-    # A called workflow can never hold more than its caller grants, and GitHub
-    # validates *every* job in it at parse time - not just the ones this call's
-    # inputs will actually run. clean-cache.yml contains cleanup-cache
-    # (actions: write) plus cleanup-image and cleanup-orphaned-image
-    # (packages: write), so each call site has to grant the union of all three
-    # or the workflow is rejected outright ("is requesting 'packages: write',
-    # but is only allowed 'packages: none'"). Granting just the scope this call
-    # uses is not enough. actionlint does not catch this.
+  list-closed-prs:
+    name: List recently closed pull requests
+    runs-on: ubuntu-latest
+    # Held here rather than by the reusable workflows, which never learn about
+    # pull request state. This job is also what keeps open pull requests out of
+    # the sweep: clean-images.yml deletes the tag it is given, whatever its
+    # pull request is doing.
     permissions:
-      actions: write
-      packages: write
-    with:
-      PR_NUMBER: ${{ github.event.pull_request.number }}
-      BRANCH_NAME: ${{ github.event.pull_request.head.ref }}
-      CLEAN_GH_CACHE: true
-      CLEAN_GHCR_IMAGE: false
-      CLEAN_ORPHANED_GHCR_IMAGE: false
+      pull-requests: read
+    outputs:
+      prs: ${{ steps.list.outputs.prs }}
+    steps:
+    - name: Collect closed pull requests within the lookback window
+      id: list
+      env:
+        GH_TOKEN: ${{ github.token }}
+        REPO: ${{ github.repository }}
+        # The schedule has no inputs context, so it falls back to the default.
+        LOOKBACK_DAYS: ${{ inputs.LOOKBACK_DAYS || 3 }}
+      run: |
+        set -euo pipefail
 
-  cleanup-images:
+        # A daily run only has to cover what closed since the last one; the
+        # window is wider than the interval so a missed run still gets swept.
+        CUTOFF=$(date -u -d "$LOOKBACK_DAYS days ago" +%Y-%m-%dT%H:%M:%SZ)
+        echo "Reconciling pull requests closed since $CUTOFF"
+
+        PRS=$(gh pr list -R "$REPO" --state closed --limit 100 \
+          --json number,headRefName,closedAt \
+          | jq -c --arg c "$CUTOFF" \
+            '[.[] | select(.closedAt >= $c) | {number, headRefName}]')
+
+        echo "Found $(printf '%s' "$PRS" | jq 'length') pull request(s) to reconcile"
+        printf '%s\n' "$PRS" | jq -r '.[] | "  #\(.number) (\(.headRefName))"'
+        echo "prs=$PRS" >> "$GITHUB_OUTPUT"
+
+  sweep-caches:
+    name: Sweep caches
+    needs: list-closed-prs
+    # An empty matrix vector is a workflow error, not an empty run.
+    if: ${{ needs.list-closed-prs.outputs.prs != '[]' }}
     uses: dnum-mi/fabnum-cicd/.github/workflows/clean-cache.yml@v0
-    # Same union as above - cleanup-cache's actions: write is validated even
-    # though CLEAN_GH_CACHE is false here.
+    # Caches only - no access to the container registry.
     permissions:
       actions: write
+    strategy:
+      fail-fast: false
+      matrix:
+        pr: ${{ fromJSON(needs.list-closed-prs.outputs.prs) }}
+    with:
+      # Both refs: the pull request's own caches live under
+      # refs/pull/<N>/merge, and the branch may hold its own from a
+      # push-triggered run.
+      PR_NUMBER: ${{ matrix.pr.number }}
+      BRANCH_NAME: ${{ matrix.pr.headRefName }}
+
+  sweep-images:
+    name: Sweep images
+    needs: list-closed-prs
+    if: ${{ needs.list-closed-prs.outputs.prs != '[]' }}
+    uses: dnum-mi/fabnum-cicd/.github/workflows/clean-images.yml@v0
+    # Registry only - no access to the Actions cache.
+    permissions:
       packages: write
     strategy:
+      fail-fast: false
       matrix:
-        images:
-        - name: server
-        - name: client
+        pr: ${{ fromJSON(needs.list-closed-prs.outputs.prs) }}
+        service:
+        - server
+        - client
     with:
-      PR_NUMBER: ${{ github.event.pull_request.number }}
-      BRANCH_NAME: ${{ github.event.pull_request.head.ref }}
-      IMAGE: ${{ format('ghcr.io/{0}/{1}:pr-{2}', github.repository, matrix.images.name, github.event.pull_request.number) }}
-      CLEAN_GH_CACHE: false
-      CLEAN_GHCR_IMAGE: true
-      CLEAN_ORPHANED_GHCR_IMAGE: false
+      IMAGE: ghcr.io/${{ github.repository }}/${{ matrix.service }}:pr-${{ matrix.pr.number }}
 
-  cleanup-orphaned-images:
-    uses: dnum-mi/fabnum-cicd/.github/workflows/clean-cache.yml@v0
-    # Same union as above.
+  sweep-orphans:
+    name: Sweep orphaned build artifacts
+    # Independent of any pull request: this collects versions left carrying
+    # only a commit SHA, after a moving tag was reassigned to a newer build.
+    # CLEAN_ORPHANED reads only the package name, so IMAGE carries no tag.
+    uses: dnum-mi/fabnum-cicd/.github/workflows/clean-images.yml@v0
     permissions:
-      actions: write
       packages: write
     strategy:
+      fail-fast: false
       matrix:
-        images:
-        - name: server
-        - name: client
+        service:
+        - server
+        - client
     with:
-      PR_NUMBER: ${{ github.event.pull_request.number }}
-      BRANCH_NAME: ${{ github.event.pull_request.head.ref }}
-      IMAGE: ${{ format('ghcr.io/{0}/{1}:pr-{2}', github.repository, matrix.images.name, github.event.pull_request.number) }}
-      CLEAN_GH_CACHE: false
-      CLEAN_GHCR_IMAGE: false
-      CLEAN_ORPHANED_GHCR_IMAGE: true
+      IMAGE: ghcr.io/${{ github.repository }}/${{ matrix.service }}
+      CLEAN_TAGGED: false
+      CLEAN_ORPHANED: true
