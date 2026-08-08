@@ -7,6 +7,14 @@ on:
     - main
   workflow_dispatch:
 
+# Releases must never overlap: two pushes landing close together would run two
+# release jobs against the same branch, and the loser fails on the tag the
+# winner already created ("Duplicate release tag"). Queue instead of cancel -
+# aborting a release midway is worse than making it wait.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+
 env:
   BUILD_AMD64: true
   BUILD_ARM64: false
@@ -30,6 +38,7 @@ env:
 jobs:
   expose-vars:
     runs-on: ubuntu-latest
+    permissions: {}
     outputs:
       BUILD_AMD64: ${{ env.BUILD_AMD64 }}
       BUILD_ARM64: ${{ env.BUILD_ARM64 }}
@@ -106,7 +115,11 @@ jobs:
       TAG_MAJOR_AND_MINOR: ${{ needs.expose-vars.outputs.TAG_MAJOR_AND_MINOR == 'true' && needs.expose-vars.outputs.LATEST_TAG == 'true' }}
       BUILD_ARGS: |
         APP_VERSION=${{ needs.release.outputs.version }}
-    secrets: inherit
+    # No `secrets:` block: pushing to ghcr.io authenticates with the job's own
+    # GITHUB_TOKEN, and BUILD_SECRET_GITHUB_TOKEN is left at its 'none' default,
+    # so nothing here needs a credential. `secrets: inherit` would hand this
+    # workflow every secret in the repository - SONAR_TOKEN, GIT_MIRROR_TOKEN,
+    # APP_PRIVATE_KEY - to build a container that uses none of them.
 
   bump-chart-local:
     uses: dnum-mi/fabnum-cicd/.github/workflows/update-helm-chart.yml@v0
@@ -189,6 +202,8 @@ jobs:
     - bump-chart-remote
     - release-charts
     if: ${{ needs.release.outputs.release-created == 'true' }}
+    # Posts to the GitLab mirror API and touches nothing on GitHub.
+    permissions: {}
     with:
       GITLAB_URL: ${{ vars.GITLAB_URL }}
       GIT_MIRROR_PROJECT_ID: ${{ vars.GIT_MIRROR_PROJECT_ID }}
