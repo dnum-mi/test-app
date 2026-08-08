@@ -11,6 +11,13 @@ on:
     - "**"
   workflow_dispatch:
 
+# Only the newest push to a pull request is worth building; cancel superseded
+# runs rather than paying for images nobody will look at. Safe to cancel here,
+# unlike the release pipeline, because nothing is published.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 env:
   BUILD_AMD64: true
   BUILD_ARM64: false
@@ -52,6 +59,7 @@ jobs:
   expose-vars:
     runs-on: ubuntu-latest
     if: ${{ !github.event.pull_request.draft }}
+    permissions: {}
     outputs:
       BUILD_AMD64: ${{ env.BUILD_AMD64 }}
       BUILD_ARM64: ${{ env.BUILD_ARM64 }}
@@ -127,7 +135,8 @@ jobs:
       USE_QEMU: ${{ needs.expose-vars.outputs.USE_QEMU == 'true' }}
       BUILD_ARGS: |
         APP_VERSION=${{ needs.expose-vars.outputs.IMAGE_TAG }}
-    secrets: inherit
+    # See the matching note in cd.yml: ghcr.io is authenticated with the job's
+    # own GITHUB_TOKEN, so there is no secret to pass.
 
   scan-trivy-images:
     uses: dnum-mi/fabnum-cicd/.github/workflows/scan-trivy.yml@v0
@@ -188,6 +197,8 @@ jobs:
     needs:
     - path-filter
     - expose-vars
+    permissions:
+      contents: read
     with:
       CT_CONF_PATH: ${{ needs.expose-vars.outputs.CT_CONF_PATH }}
 
@@ -196,9 +207,13 @@ jobs:
     name: Check jobs status
     runs-on: ubuntu-latest
     if: ${{ always() }}
+    permissions: {}
+    # Every job in this workflow must be listed here, or a failure in the
+    # missing one leaves the gate green and the branch mergeable.
     needs:
     - path-filter
     - expose-vars
+    - lint-commits
     - build-docker
     # - scan-sonarqube
     - scan-trivy-conf
