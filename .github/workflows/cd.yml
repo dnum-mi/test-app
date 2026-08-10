@@ -28,7 +28,6 @@ env:
   AUTOMERGE_METHOD: admin
   PRERELEASE_BRANCH: develop
   RELEASE_BRANCH: main
-  REBASE_PRERELEASE_BRANCH: true
   RELEASE_CONFIG_FILE: release-please-config.json
   RELEASE_MANIFEST_FILE: .release-please-manifest.json
   PRERELEASE_CONFIG_FILE: release-please-config-rc.json
@@ -50,7 +49,6 @@ jobs:
       AUTOMERGE_METHOD: ${{ env.AUTOMERGE_METHOD }}
       PRERELEASE_BRANCH: ${{ env.PRERELEASE_BRANCH }}
       RELEASE_BRANCH: ${{ env.RELEASE_BRANCH }}
-      REBASE_PRERELEASE_BRANCH: ${{ env.REBASE_PRERELEASE_BRANCH }}
       RELEASE_CONFIG_FILE: ${{ env.RELEASE_CONFIG_FILE }}
       RELEASE_MANIFEST_FILE: ${{ env.RELEASE_MANIFEST_FILE }}
       PRERELEASE_CONFIG_FILE: ${{ env.PRERELEASE_CONFIG_FILE }}
@@ -75,7 +73,6 @@ jobs:
       AUTOMERGE_METHOD: ${{ needs.expose-vars.outputs.AUTOMERGE_METHOD }}
       PRERELEASE_BRANCH: ${{ needs.expose-vars.outputs.PRERELEASE_BRANCH }}
       RELEASE_BRANCH: ${{ needs.expose-vars.outputs.RELEASE_BRANCH }}
-      REBASE_PRERELEASE_BRANCH: ${{ needs.expose-vars.outputs.REBASE_PRERELEASE_BRANCH == 'true' }}
       RELEASE_CONFIG_FILE: ${{ needs.expose-vars.outputs.RELEASE_CONFIG_FILE }}
       RELEASE_MANIFEST_FILE: ${{ needs.expose-vars.outputs.RELEASE_MANIFEST_FILE }}
       PRERELEASE_CONFIG_FILE: ${{ needs.expose-vars.outputs.PRERELEASE_CONFIG_FILE }}
@@ -189,6 +186,34 @@ jobs:
       APP_VERSION: ${{ needs.release.outputs.version }}
       CHECKOUT_REF: ${{ needs.bump-chart-local.outputs.commit-sha }}
       HELM_REPOS: "bitnami=https://charts.bitnami.com/bitnami,hashicorp=https://helm.releases.hashicorp.com,cnpg=https://cloudnative-pg.github.io/charts"
+
+  # Last on purpose. A release lands commits on main that develop does not have
+  # - release-please's release commit, and bump-chart-local's chart bump - and
+  # develop edits those same files on its own rc cycle. Left unsynchronised it
+  # computes its next versions from a pre-release state and conflicts with main
+  # on the following promotion.
+  #
+  # `needs:` lists exactly the jobs that COMMIT to main - release and
+  # bump-chart-local - and nothing else. build-docker and release-charts commit
+  # nothing, and listing them would only let a failed build or a failed publish
+  # skip the sync, leaving develop stale for no reason. Ordering still holds:
+  # bump-chart-local already needs build-docker.
+  #
+  # release-app.yml asserts the result on the next develop run, so a missing
+  # entry here fails loudly there rather than silently producing a version
+  # below what main published.
+  sync-prerelease-branch:
+    uses: dnum-mi/fabnum-cicd/.github/workflows/sync-prerelease-branch.yml@v0
+    needs:
+    - expose-vars
+    - release
+    - bump-chart-local
+    if: ${{ github.ref_name == needs.expose-vars.outputs.RELEASE_BRANCH && needs.release.outputs.release-created == 'true' }}
+    permissions:
+      contents: write
+    with:
+      RELEASE_BRANCH: ${{ needs.expose-vars.outputs.RELEASE_BRANCH }}
+      PRERELEASE_BRANCH: ${{ needs.expose-vars.outputs.PRERELEASE_BRANCH }}
 
   sync-cpin:
     uses: dnum-mi/fabnum-cicd/.github/workflows/sync-cpin.yml@v0
