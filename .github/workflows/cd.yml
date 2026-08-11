@@ -132,11 +132,9 @@ jobs:
       RUN_MODE: local
       CHART_DIR: ./
       CHART_NAME: helm
+      # UPGRADE_TYPE defaults to 'auto': level from the appVersion delta, rc
+      # cycle vs release selected by the shape of APP_VERSION
       APP_VERSION: ${{ needs.release.outputs.version }}
-      # 'auto': level from the appVersion delta, rc cycle vs release selected
-      # by the shape of APP_VERSION - the same value fits develop and main
-      UPGRADE_TYPE: auto
-      PRERELEASE_IDENTIFIER: rc
       AUTOMERGE_PRERELEASE: ${{ needs.expose-vars.outputs.AUTOMERGE_PRERELEASE == 'true' }}
       AUTOMERGE_RELEASE: ${{ needs.expose-vars.outputs.AUTOMERGE_RELEASE == 'true' }}
       AUTOMERGE_METHOD: ${{ needs.expose-vars.outputs.AUTOMERGE_METHOD }}
@@ -158,11 +156,9 @@ jobs:
       CHART_REPO: dnum-mi/test-helm
       CHART_DIR: ./charts
       CHART_NAME: test-app
+      # UPGRADE_TYPE defaults to 'auto': level from the appVersion delta, rc
+      # cycle vs release selected by the shape of APP_VERSION
       APP_VERSION: ${{ needs.release.outputs.version }}
-      # 'auto': level from the appVersion delta, rc cycle vs release selected
-      # by the shape of APP_VERSION - the same value fits develop and main
-      UPGRADE_TYPE: auto
-      PRERELEASE_IDENTIFIER: rc
       AUTOMERGE_PRERELEASE: ${{ needs.expose-vars.outputs.AUTOMERGE_PRERELEASE == 'true' }}
       AUTOMERGE_RELEASE: ${{ needs.expose-vars.outputs.AUTOMERGE_RELEASE == 'true' }}
       AUTOMERGE_METHOD: ${{ needs.expose-vars.outputs.AUTOMERGE_METHOD }}
