@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.0-rc.1](https://github.com/dnum-mi/test-app/compare/v0.2.3-rc.1...v0.3.0-rc.1) (2026-08-11)
+
+
+### Features
+
+* feat-001 ([6e5fdda](https://github.com/dnum-mi/test-app/commit/6e5fdda19751be069bc980b88e9682b3bdcc5f3f))
+
 ## [0.2.3-rc.1](https://github.com/dnum-mi/test-app/compare/v0.2.3-rc...v0.2.3-rc.1) (2026-08-11)
 
 
