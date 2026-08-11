@@ -52,3 +52,4 @@ bun run kube:clean
 ## Notes
 
 Ce dépôt est destiné uniquement à des fins de test et d'expérimentation.
+
