@@ -133,7 +133,9 @@ jobs:
       CHART_DIR: ./
       CHART_NAME: helm
       APP_VERSION: ${{ needs.release.outputs.version }}
-      UPGRADE_TYPE: ${{ github.ref_name == 'develop' && 'prerelease' || github.ref_name == 'main' && 'patch' }}
+      # 'auto': level from the appVersion delta, rc cycle vs release selected
+      # by the shape of APP_VERSION - the same value fits develop and main
+      UPGRADE_TYPE: auto
       PRERELEASE_IDENTIFIER: rc
       AUTOMERGE_PRERELEASE: ${{ needs.expose-vars.outputs.AUTOMERGE_PRERELEASE == 'true' }}
       AUTOMERGE_RELEASE: ${{ needs.expose-vars.outputs.AUTOMERGE_RELEASE == 'true' }}
@@ -157,7 +159,9 @@ jobs:
       CHART_DIR: ./charts
       CHART_NAME: test-app
       APP_VERSION: ${{ needs.release.outputs.version }}
-      UPGRADE_TYPE: ${{ github.ref_name == 'develop' && 'prerelease' || github.ref_name == 'main' && 'patch' }}
+      # 'auto': level from the appVersion delta, rc cycle vs release selected
+      # by the shape of APP_VERSION - the same value fits develop and main
+      UPGRADE_TYPE: auto
       PRERELEASE_IDENTIFIER: rc
       AUTOMERGE_PRERELEASE: ${{ needs.expose-vars.outputs.AUTOMERGE_PRERELEASE == 'true' }}
       AUTOMERGE_RELEASE: ${{ needs.expose-vars.outputs.AUTOMERGE_RELEASE == 'true' }}
