@@ -6,7 +6,7 @@ chart-repos:
 - bitnami=https://charts.bitnami.com/bitnami
 - hashicorp=https://helm.releases.hashicorp.com
 - cnpg=https://cloudnative-pg.github.io/charts
-helm-extra-args: ''
+helm-extra-args: ""
 # The chart version is bumped by bump-chart-local when a release is cut, so a
 # pull request that edits the chart must not bump it by hand: the check would
 # demand a version the release pipeline is about to compute itself.

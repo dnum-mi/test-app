@@ -8,12 +8,12 @@ services:
       target: dev
     restart: always
     ports:
-      - 8081:8081
+    - 8081:8081
     volumes:
-      - ../apps/server:/app
-      - /app/node_modules
+    - ../apps/server:/app
+    - /app/node_modules
     networks:
-      - test-app-network
+    - test-app-network
 
   client:
     image: test-app/client:dev
@@ -24,15 +24,15 @@ services:
       target: dev
     restart: always
     ports:
-      - 8080:8080
+    - 8080:8080
     environment:
       VITE_API_URL: http://localhost:8081/api
     volumes:
-      - ../apps/client:/app
-      - /app/node_modules
+    - ../apps/client:/app
+    - /app/node_modules
     networks:
-      - test-app-network
+    - test-app-network
 
 networks:
   test-app-network:
-    # driver: bridge
+  # driver: bridge

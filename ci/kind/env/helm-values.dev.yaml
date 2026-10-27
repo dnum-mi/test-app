@@ -6,7 +6,7 @@ ingress:
   - example.domain.local
 
 server:
-  image: 
+  image:
     repository: test-app/server
     tag: dev
     pullPolicy: Never
@@ -20,7 +20,7 @@ server:
     mountPath: /app/src
 
 client:
-  image: 
+  image:
     repository: test-app/client
     tag: dev
     pullPolicy: Never

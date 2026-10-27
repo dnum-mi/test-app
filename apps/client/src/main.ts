@@ -1,5 +1,5 @@
-import './style.css'
 import { callApi } from './api.ts'
+import './style.css'
 
 document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
   <div>
