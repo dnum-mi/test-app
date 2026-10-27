@@ -152,13 +152,18 @@ jobs:
   # chart to Harbor at the project root (<project>/test-app). The in-repo chart
   # goes to <project>/test-app-mono (see .gitlab-ci-dso.yml), so the two
   # never overwrite each other. test-helm's cd.yml can also be run by hand.
+  #
+  # Opt-in: the in-repo chart is the default flow. Set the repository variable
+  # BUMP_REMOTE_CHART to 'true' to also open the chart update in test-helm
+  # (gh variable set BUMP_REMOTE_CHART --body true), with the automerge flags
+  # above applying to that pull request.
   bump-chart-remote:
     uses: dnum-mi/fabnum-cicd/.github/workflows/dispatch-helm-chart.yml@v0
     needs:
     - expose-vars
     - release
     - build-docker
-    if: ${{ needs.release.outputs.release-created == 'true' }}
+    if: ${{ needs.release.outputs.release-created == 'true' && vars.BUMP_REMOTE_CHART == 'true' }}
     # Authenticated entirely by the App token, scoped to test-helm alone.
     permissions: {}
     with:
@@ -241,7 +246,6 @@ jobs:
     - release
     - build-docker
     - bump-chart-local
-    - bump-chart-remote
     - release-charts
     # Opt-in: set the repository variable CPIN_AUTO_SYNC to 'true' to sync a
     # release to CPiN automatically (gh variable set CPIN_AUTO_SYNC --body true).
