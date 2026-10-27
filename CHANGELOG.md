@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.0.2](https://github.com/dnum-mi/test-app/compare/v1.0.1...v1.0.2) (2026-10-27)
+
+
+### Bug Fixes
+
+* bump versions ([f91ecae](https://github.com/dnum-mi/test-app/commit/f91ecae24b488c4975d0341c9e09274f82457ddf))
+* **chart:** keep values.yaml valid for chart-testing and helm-docs ([4ff5a66](https://github.com/dnum-mi/test-app/commit/4ff5a66aa82d222a9a7ded8c25a7f4422ebe1177))
+
 ## [1.0.2-rc](https://github.com/dnum-mi/test-app/compare/v1.0.1...v1.0.2-rc) (2026-10-27)
 
 

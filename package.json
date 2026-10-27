@@ -1,7 +1,7 @@
 {
   "name": "test-app",
   "type": "module",
-  "version": "1.0.2-rc",
+  "version": "1.0.2",
   "packageManager": "bun@1.4.4",
   "license": "ISC",
   "scripts": {
