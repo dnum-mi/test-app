@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.0.1-rc](https://github.com/dnum-mi/test-app/compare/v1.0.0...v1.0.1-rc) (2026-10-27)
+
+
+### Bug Fixes
+
+* **ci:** sync the branch to CPiN and list the files rewritten on release ([126bd53](https://github.com/dnum-mi/test-app/commit/126bd5359b0bfd607f7ea0761f2975666fcbfcfa))
+* **ci:** tag harbor images with the appVersion and publish the chart as test-app-mono ([e5a1917](https://github.com/dnum-mi/test-app/commit/e5a1917ffa2951eb87d593514856950c98aa8e33))
+
 ## [1.0.0](https://github.com/dnum-mi/test-app/compare/v0.4.0...v1.0.0) (2026-08-12)
 
 
