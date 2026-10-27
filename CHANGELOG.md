@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.0.1-rc.1](https://github.com/dnum-mi/test-app/compare/v1.0.1-rc...v1.0.1-rc.1) (2026-10-27)
+
+
+### Bug Fixes
+
+* **helm:** pin the resource names and leave tls to the ingress controller ([57bf7d0](https://github.com/dnum-mi/test-app/commit/57bf7d09f41c67bed4195038613672e74500c640))
+
+
+### Code Refactoring
+
+* **helm:** drop nameOverride, fullnameOverride is enough ([a972f65](https://github.com/dnum-mi/test-app/commit/a972f65293120b32c1efeb3b2649dd9cce09e60e))
+
 ## [1.0.1-rc](https://github.com/dnum-mi/test-app/compare/v1.0.0...v1.0.1-rc) (2026-10-27)
 
 
