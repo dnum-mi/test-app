@@ -1,5 +1,19 @@
 # Changelog
 
+## [1.0.1](https://github.com/dnum-mi/test-app/compare/v1.0.0...v1.0.1) (2026-10-27)
+
+
+### Bug Fixes
+
+* **ci:** sync the branch to CPiN and list the files rewritten on release ([adda977](https://github.com/dnum-mi/test-app/commit/adda9776a5e88fd6e0ed1ac61929110db0d819b0))
+* **ci:** tag harbor images with the appVersion and publish the chart as test-app-mono ([13dc833](https://github.com/dnum-mi/test-app/commit/13dc83304f4afbaa678544c62ec0fba9256bd251))
+* **helm:** pin the resource names and leave tls to the ingress controller ([5f9001d](https://github.com/dnum-mi/test-app/commit/5f9001d22e1ba83d9a595a51ac831c95f848e14a))
+
+
+### Code Refactoring
+
+* **helm:** drop nameOverride, fullnameOverride is enough ([2cc0b1b](https://github.com/dnum-mi/test-app/commit/2cc0b1bee5bd8e4bb1c660c713890885f8ece22f))
+
 ## [1.0.1-rc.1](https://github.com/dnum-mi/test-app/compare/v1.0.1-rc...v1.0.1-rc.1) (2026-10-27)
 
 
