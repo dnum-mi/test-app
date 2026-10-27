@@ -1,0 +1,7 @@
+# chart-testing installs the chart once per ci/*-values.yaml. The server image
+# listens on 8081 unless API_PORT says otherwise, while the chart's container
+# port and probes are 8080: deployments set API_PORT in values/common.yaml,
+# which chart-testing does not read.
+server:
+  env:
+    API_PORT: "8080"
