@@ -1,12 +1,18 @@
-# Keeps the resource names (test-app-server, ...) the same whichever name the
-# chart is published under: the copy pushed to Harbor is named test-app-mono.
+# The chart is published to Harbor as test-app-mono, so its name no longer
+# gives the resources their names: pin them. fullnameOverride is what every
+# resource (and the selector labels) is named after - test-app-server,
+# test-app-client, ... - whatever the release is called.
 nameOverride: test-app
+fullnameOverride: test-app
 
 global:
   ingress:
     enabled: true
     annotations: {}
     labels: {}
+    # TLS is terminated by the ingress controller: no tls section on the
+    # Ingress. The key must stay (empty), the template takes the length of it.
+    tls: []
 
 server:
   env:

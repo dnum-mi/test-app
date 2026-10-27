@@ -13,10 +13,6 @@ global:
       name: "tobi.sdid-app.cpin.numerique-interieur.com"
       pathType: "Prefix"
       path: "/"
-    tls:
-    - secretName: "tobi.sdid-app.cpin.numerique-interieur.com-tls"
-      hosts:
-      - "tobi.sdid-app.cpin.numerique-interieur.com"
 
 extraObjects:
 - apiVersion: "secrets.hashicorp.com/v1beta1"
