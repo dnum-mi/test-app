@@ -21,8 +21,13 @@ env:
   LATEST_TAG: ${{ github.ref_name == 'main' }}
   USE_QEMU: true
   TAG_MAJOR_AND_MINOR: false
-  AUTOMERGE_PRERELEASE: true
-  AUTOMERGE_RELEASE: false
+  # Off by default: release and chart PRs wait for a manual merge. Switch them
+  # on without a commit through repository variables, e.g. for a demo:
+  #   gh variable set AUTOMERGE_PRERELEASE --body true
+  #   gh variable delete AUTOMERGE_PRERELEASE        (back to the default)
+  # The same flags are forwarded to the chart bumps, local and test-helm's.
+  AUTOMERGE_PRERELEASE: ${{ vars.AUTOMERGE_PRERELEASE || 'false' }}
+  AUTOMERGE_RELEASE: ${{ vars.AUTOMERGE_RELEASE || 'false' }}
   # 'auto' needs 'Allow auto-merge' in Settings > General, which private repos
   # on the free plan can't enable. 'admin' merges immediately instead.
   AUTOMERGE_METHOD: admin
