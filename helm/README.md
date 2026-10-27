@@ -1,6 +1,6 @@
 # test-app
 
-![Version: 1.0.1](https://img.shields.io/badge/Version-1.0.1-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 1.0.1](https://img.shields.io/badge/AppVersion-1.0.1-informational?style=flat-square)
+![Version: 1.0.2](https://img.shields.io/badge/Version-1.0.2-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 1.0.1](https://img.shields.io/badge/AppVersion-1.0.1-informational?style=flat-square)
 
 A Helm chart to deploy test-app.
 
@@ -109,7 +109,7 @@ A Helm chart to deploy test-app.
 | client.ingress.enabled | bool | `false` | Whether or not ingress should be enabled. |
 | client.ingress.hosts[0].backend.portNumber | string | `nil` | Port used by the backend service linked to the host record (leave null to use the app service port). @schema type:[integer, null] |
 | client.ingress.hosts[0].backend.serviceName | string | `""` | Name of the backend service linked to the host record (leave empty to use the app service). |
-| client.ingress.hosts[0].name | string | `"domain.local"` | Name of the host record. |
+| client.ingress.hosts[0].name | string | `"domain.local"` |  |
 | client.ingress.hosts[0].path | string | `"/"` | Path of the host record to manage routing. |
 | client.ingress.hosts[0].pathType | string | `"Prefix"` | Path type of the host record. |
 | client.ingress.labels | object | `{}` | Additional ingress labels. |
@@ -131,7 +131,7 @@ A Helm chart to deploy test-app.
 | client.metrics.serviceMonitor.endpoints[0].bearerTokenSecret.key | string | `""` | Secret key to mount to read bearer token for scraping targets. The secret needs to be in the same namespace as the service monitor and accessible by the Prometheus Operator. |
 | client.metrics.serviceMonitor.endpoints[0].bearerTokenSecret.name | string | `""` | Secret name to mount to read bearer token for scraping targets. The secret needs to be in the same namespace as the service monitor and accessible by the Prometheus Operator. |
 | client.metrics.serviceMonitor.endpoints[0].honorLabels | bool | `false` | When true, honorLabels preserves the metric’s labels when they collide with the target’s labels. |
-| client.metrics.serviceMonitor.endpoints[0].interval | string | `"30s"` | Prometheus ServiceMonitor interval. |
+| client.metrics.serviceMonitor.endpoints[0].interval | string | `"30s"` |  |
 | client.metrics.serviceMonitor.endpoints[0].metricRelabelings | list | `[]` | Prometheus MetricRelabelConfigs to apply to samples before ingestion. |
 | client.metrics.serviceMonitor.endpoints[0].path | string | `"/metrics"` | Path used by the Prometheus ServiceMonitor to scrape metrics. |
 | client.metrics.serviceMonitor.endpoints[0].relabelings | list | `[]` | Prometheus RelabelConfigs to apply to samples before scraping. |
@@ -325,7 +325,7 @@ A Helm chart to deploy test-app.
 | server.ingress.enabled | bool | `false` | Whether or not ingress should be enabled. |
 | server.ingress.hosts[0].backend.portNumber | string | `nil` | Port used by the backend service linked to the host record (leave null to use the app service port). @schema type:[integer, null] |
 | server.ingress.hosts[0].backend.serviceName | string | `""` | Name of the backend service linked to the host record (leave empty to use the app service). |
-| server.ingress.hosts[0].name | string | `"domain.local"` | Name of the host record. |
+| server.ingress.hosts[0].name | string | `"domain.local"` |  |
 | server.ingress.hosts[0].path | string | `"/"` | Path of the host record to manage routing. |
 | server.ingress.hosts[0].pathType | string | `"Prefix"` | Path type of the host record. |
 | server.ingress.labels | object | `{}` | Additional ingress labels. |
@@ -347,7 +347,7 @@ A Helm chart to deploy test-app.
 | server.metrics.serviceMonitor.endpoints[0].bearerTokenSecret.key | string | `""` | Secret key to mount to read bearer token for scraping targets. The secret needs to be in the same namespace as the service monitor and accessible by the Prometheus Operator. |
 | server.metrics.serviceMonitor.endpoints[0].bearerTokenSecret.name | string | `""` | Secret name to mount to read bearer token for scraping targets. The secret needs to be in the same namespace as the service monitor and accessible by the Prometheus Operator. |
 | server.metrics.serviceMonitor.endpoints[0].honorLabels | bool | `false` | When true, honorLabels preserves the metric’s labels when they collide with the target’s labels. |
-| server.metrics.serviceMonitor.endpoints[0].interval | string | `"30s"` | Prometheus ServiceMonitor interval. |
+| server.metrics.serviceMonitor.endpoints[0].interval | string | `"30s"` |  |
 | server.metrics.serviceMonitor.endpoints[0].metricRelabelings | list | `[]` | Prometheus MetricRelabelConfigs to apply to samples before ingestion. |
 | server.metrics.serviceMonitor.endpoints[0].path | string | `"/metrics"` | Path used by the Prometheus ServiceMonitor to scrape metrics. |
 | server.metrics.serviceMonitor.endpoints[0].relabelings | list | `[]` | Prometheus RelabelConfigs to apply to samples before scraping. |

@@ -1,7 +1,7 @@
 apiVersion: v2
 name: test-app
 type: application
-version: 1.0.1
+version: 1.0.2
 appVersion: 1.0.1
 description: A Helm chart to deploy test-app.
 # home: https://this-is-tobi.com

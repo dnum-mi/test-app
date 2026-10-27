@@ -117,11 +117,11 @@ jobs:
       TAG_MAJOR_AND_MINOR: ${{ needs.expose-vars.outputs.TAG_MAJOR_AND_MINOR == 'true' && needs.expose-vars.outputs.LATEST_TAG == 'true' }}
       BUILD_ARGS: |
         APP_VERSION=${{ needs.release.outputs.version }}
-    # No `secrets:` block: pushing to ghcr.io authenticates with the job's own
-    # GITHUB_TOKEN, and BUILD_SECRET_GITHUB_TOKEN is left at its 'none' default,
-    # so nothing here needs a credential. `secrets: inherit` would hand this
-    # workflow every secret in the repository - SONAR_TOKEN, GIT_MIRROR_TOKEN,
-    # APP_PRIVATE_KEY - to build a container that uses none of them.
+  # No `secrets:` block: pushing to ghcr.io authenticates with the job's own
+  # GITHUB_TOKEN, and BUILD_SECRET_GITHUB_TOKEN is left at its 'none' default,
+  # so nothing here needs a credential. `secrets: inherit` would hand this
+  # workflow every secret in the repository - SONAR_TOKEN, GIT_MIRROR_TOKEN,
+  # APP_PRIVATE_KEY - to build a container that uses none of them.
 
   bump-chart-local:
     uses: dnum-mi/fabnum-cicd/.github/workflows/update-helm-chart.yml@v0

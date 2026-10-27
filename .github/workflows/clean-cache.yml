@@ -21,7 +21,7 @@ name: Clean GitHub Cache and GHCR Image
 on:
   schedule:
   # 01:00 UTC daily, comfortably after the day's builds have settled.
-  - cron: '0 1 * * *'
+  - cron: "0 1 * * *"
   workflow_dispatch:
     inputs:
       LOOKBACK_DAYS:
