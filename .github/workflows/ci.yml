@@ -106,6 +106,7 @@ jobs:
       PATH: ./
       PR_NUMBER: ${{ github.event.pull_request.number || github.event.number || '' }}
       GITHUB_SECURITY_TAB: false
+      TRIVYIGNORES: .trivyignore.yaml
 
   build-docker:
     uses: dnum-mi/fabnum-cicd/.github/workflows/build-docker.yml@v0

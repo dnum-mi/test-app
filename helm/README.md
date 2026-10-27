@@ -45,19 +45,19 @@ A Helm chart to deploy test-app.
 | client.extraPorts | list | `[]` | Client extra container ports. |
 | client.hostAliases | list | `[]` | Host aliases that will be injected at pod-level into /etc/hosts. |
 | client.imagePullSecrets | list | `[]` | Image credentials configuration. |
-| client.initContainers | list | `[]` | Init containers to add to the app pod. |
+| client.initContainers | list | `[{"command":["sh","-c","cp -R /usr/share/nginx/html/assets/. /work/"],"image":"{{ .Values.global.imageRegistry | default .Values.client.image.registry }}/{{ .Values.client.image.repository }}:{{ .Values.client.image.tag | default .Chart.AppVersion }}","imagePullPolicy":"{{ .Values.client.image.pullPolicy }}","name":"copy-assets","resources":{"limits":{"cpu":"100m","memory":"64Mi"},"requests":{"cpu":"10m","memory":"16Mi"}},"securityContext":{"allowPrivilegeEscalation":false,"capabilities":{"drop":["ALL"]},"readOnlyRootFilesystem":true},"volumeMounts":[{"mountPath":"/work","name":"assets"}]}]` | Init containers to add to the app pod. |
 | client.nodeSelector | object | `{}` | Default node selector for app. |
 | client.podAnnotations | object | `{}` | Annotations for the app deployed pods. |
 | client.podLabels | object | `{}` | Labels for the app deployed pods. |
-| client.podSecurityContext | object | `{}` | Toggle and define pod-level security context. |
+| client.podSecurityContext | object | `{"runAsGroup":10001,"runAsNonRoot":true,"runAsUser":10001,"seccompProfile":{"type":"RuntimeDefault"},"supplementalGroups":[0]}` | Toggle and define pod-level security context. |
 | client.replicaCount | int | `1` | The number of application controller pods to run. |
 | client.revisionHistoryLimit | int | `3` | Revision history limit for the app. |
-| client.securityContext | object | `{}` | Toggle and define container-level security context. |
+| client.securityContext | object | `{"allowPrivilegeEscalation":false,"capabilities":{"drop":["ALL"]},"readOnlyRootFilesystem":true}` | Toggle and define container-level security context. |
 | client.statefulset | bool | `false` | Should the app run as a StatefulSet instead of a Deployment. |
 | client.tolerations | list | `[]` | Default tolerations for app. |
 | client.volumeClaims | list | `[]` | List of volumeClaims to add. |
-| client.volumeMounts | list | `[]` | List of mounts to add (normally used with `volumes` or `volumeClaims`). |
-| client.volumes | list | `[]` | List of volumes to add. |
+| client.volumeMounts | list | `[{"mountPath":"/tmp","name":"tmp"},{"mountPath":"/usr/share/nginx/html/assets","name":"assets"}]` | List of mounts to add (normally used with `volumes` or `volumeClaims`). |
+| client.volumes | list | `[{"emptyDir":{},"name":"tmp"},{"emptyDir":{},"name":"assets"}]` | List of volumes to add. |
 
 #### Autoscaling
 
@@ -265,15 +265,15 @@ A Helm chart to deploy test-app.
 | server.nodeSelector | object | `{}` | Default node selector for app. |
 | server.podAnnotations | object | `{}` | Annotations for the app deployed pods. |
 | server.podLabels | object | `{}` | Labels for the app deployed pods. |
-| server.podSecurityContext | object | `{}` | Toggle and define pod-level security context. |
+| server.podSecurityContext | object | `{"runAsGroup":10001,"runAsNonRoot":true,"runAsUser":10001,"seccompProfile":{"type":"RuntimeDefault"}}` | Toggle and define pod-level security context. |
 | server.replicaCount | int | `1` | The number of application controller pods to run. |
 | server.revisionHistoryLimit | int | `3` | Revision history limit for the app. |
-| server.securityContext | object | `{}` | Toggle and define container-level security context. |
+| server.securityContext | object | `{"allowPrivilegeEscalation":false,"capabilities":{"drop":["ALL"]},"readOnlyRootFilesystem":true}` | Toggle and define container-level security context. |
 | server.statefulset | bool | `false` | Should the app run as a StatefulSet instead of a Deployment. |
 | server.tolerations | list | `[]` | Default tolerations for app. |
 | server.volumeClaims | list | `[]` | List of volumeClaims to add. |
-| server.volumeMounts | list | `[]` | List of mounts to add (normally used with `volumes` or `volumeClaims`). |
-| server.volumes | list | `[]` | List of volumes to add. |
+| server.volumeMounts | list | `[{"mountPath":"/tmp","name":"tmp"}]` | List of mounts to add (normally used with `volumes` or `volumeClaims`). |
+| server.volumes | list | `[{"emptyDir":{},"name":"tmp"}]` | List of volumes to add. |
 
 #### Autoscaling
 

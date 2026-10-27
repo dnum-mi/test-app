@@ -308,7 +308,12 @@ server:
   podLabels: {}
   # -- Toggle and define pod-level security context.
   # @section -- Server
-  podSecurityContext: {}
+  podSecurityContext:
+    runAsNonRoot: true
+    runAsUser: 10001
+    runAsGroup: 10001
+    seccompProfile:
+      type: RuntimeDefault
   # fsGroup: 2000
   # -- Init containers to add to the app pod.
   # @section -- Server
@@ -350,13 +355,12 @@ server:
   args: []
   # -- Toggle and define container-level security context.
   # @section -- Server
-  securityContext: {}
-  # capabilities:
-  #   drop:
-  #   - ALL
-  # readOnlyRootFilesystem: true
-  # runAsNonRoot: true
-  # runAsUser: 1000
+  securityContext:
+    allowPrivilegeEscalation: false
+    readOnlyRootFilesystem: true
+    capabilities:
+      drop:
+        - ALL
   # -- Server container env variables loaded from configmap or secret reference.
   # @section -- Server
   envFrom: []
@@ -504,7 +508,10 @@ server:
   #   - "bar.remote"
   # -- List of volumes to add.
   # @section -- Server
-  volumes: []
+  volumes:
+    # Writable scratch space, the root filesystem is read-only.
+    - name: tmp
+      emptyDir: {}
   # - name: config-volume
   #   configMap:
   #     name: log-config
@@ -531,7 +538,9 @@ server:
   #         storage: 1Gi
   # -- List of mounts to add (normally used with `volumes` or `volumeClaims`).
   # @section -- Server
-  volumeMounts: []
+  volumeMounts:
+    - name: tmp
+      mountPath: /tmp
   # - name: config-volume
   #   mountPath: /app/config
   #   subPath: config
@@ -973,11 +982,43 @@ client:
   podLabels: {}
   # -- Toggle and define pod-level security context.
   # @section -- Client
-  podSecurityContext: {}
+  podSecurityContext:
+    runAsNonRoot: true
+    runAsUser: 10001
+    runAsGroup: 10001
+    # The image keeps its files owned by 1001 with the group root (770): group 0
+    # as a supplemental group grants the access without running as root.
+    supplementalGroups:
+      - 0
+    seccompProfile:
+      type: RuntimeDefault
   # fsGroup: 2000
   # -- Init containers to add to the app pod.
   # @section -- Client
-  initContainers: []
+  initContainers:
+    - name: copy-assets
+      image: "{{ .Values.global.imageRegistry | default .Values.client.image.registry }}/{{ .Values.client.image.repository }}:{{ .Values.client.image.tag | default .Chart.AppVersion }}"
+      imagePullPolicy: "{{ .Values.client.image.pullPolicy }}"
+      command:
+        - sh
+        - -c
+        - cp -R /usr/share/nginx/html/assets/. /work/
+      securityContext:
+        allowPrivilegeEscalation: false
+        readOnlyRootFilesystem: true
+        capabilities:
+          drop:
+            - ALL
+      resources:
+        requests:
+          cpu: 10m
+          memory: 16Mi
+        limits:
+          cpu: 100m
+          memory: 64Mi
+      volumeMounts:
+        - name: assets
+          mountPath: /work
   # - name: wait-for-keycloak
   #   image: docker.io/curlimages/curl:8.18.0
   #   command:
@@ -1015,13 +1056,12 @@ client:
   args: []
   # -- Toggle and define container-level security context.
   # @section -- Client
-  securityContext: {}
-  # capabilities:
-  #   drop:
-  #   - ALL
-  # readOnlyRootFilesystem: true
-  # runAsNonRoot: true
-  # runAsUser: 1000
+  securityContext:
+    allowPrivilegeEscalation: false
+    readOnlyRootFilesystem: true
+    capabilities:
+      drop:
+        - ALL
   # -- Client container env variables loaded from configmap or secret reference.
   # @section -- Client
   envFrom: []
@@ -1169,7 +1209,14 @@ client:
   #   - "bar.remote"
   # -- List of volumes to add.
   # @section -- Client
-  volumes: []
+  volumes:
+    # Writable scratch space, the root filesystem is read-only.
+    - name: tmp
+      emptyDir: {}
+    # The entrypoint rewrites the built JS at start to inject the runtime
+    # variables; copy-assets fills this volume from the image first.
+    - name: assets
+      emptyDir: {}
   # - name: config-volume
   #   configMap:
   #     name: log-config
@@ -1196,7 +1243,11 @@ client:
   #         storage: 1Gi
   # -- List of mounts to add (normally used with `volumes` or `volumeClaims`).
   # @section -- Client
-  volumeMounts: []
+  volumeMounts:
+    - name: tmp
+      mountPath: /tmp
+    - name: assets
+      mountPath: /usr/share/nginx/html/assets
   # - name: config-volume
   #   mountPath: /app/config
   #   subPath: config
