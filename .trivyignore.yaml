@@ -1,0 +1,20 @@
+# Trivy config-scan findings accepted rather than fixed. Each one is a condition the chart
+# cannot satisfy on its own, or a known gap with a stated way out.
+
+misconfigurations:
+  # "Restrict container images to trusted registries" - Trivy is not told which registries are
+  # trusted, so every image reference trips it. A policy gap, not a finding on the chart: the
+  # registries (Harbor, ghcr.io) are chosen by the environment, not by the chart.
+  - id: KSV-0125
+
+  # "Workloads in the default namespace" - a portable chart does not hardcode a namespace, and
+  # static analysis without a `--namespace` override cannot tell what an install will use.
+  - id: KSV-0110
+
+  # "Runs with a root primary or supplementary GID" - the client pod adds group 0 as a
+  # supplemental group, never as its primary one. The image keeps the files nginx reads owned by
+  # 1001:0 with mode 770, so UID 10001 reaches them only through group 0. Remove this entry
+  # together with `supplementalGroups` once the client Dockerfile owns those files by 10001:10001.
+  - id: KSV-0116
+    paths:
+      - helm/templates/client/deployment.yaml
