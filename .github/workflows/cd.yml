@@ -249,9 +249,11 @@ jobs:
     with:
       GITLAB_URL: ${{ vars.GITLAB_URL }}
       GIT_MIRROR_PROJECT_ID: ${{ vars.GIT_MIRROR_PROJECT_ID }}
-      # The mirror forwards branches only, never tags: .gitlab-ci-dso.yml reads
-      # the version from helm/Chart.yaml, which bump-chart-local has already
-      # committed to this branch.
+      # Sync the branch, not the release tag: the tag sits on release-please's
+      # commit, before bump-chart-local's chart bump, so the mirrored Chart.yaml
+      # would still carry the previous appVersion. .gitlab-ci-dso.yml reads the
+      # version from it, and bump-chart-local has already committed it to this
+      # branch.
       BRANCH_TO_SYNC: ${{ github.ref_name }}
       REPOSITORY_NAME: ${{ vars.REPOSITORY_NAME }}
     secrets:
