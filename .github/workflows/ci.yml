@@ -135,8 +135,8 @@ jobs:
       USE_QEMU: ${{ needs.expose-vars.outputs.USE_QEMU == 'true' }}
       BUILD_ARGS: |
         APP_VERSION=${{ needs.expose-vars.outputs.IMAGE_TAG }}
-    # See the matching note in cd.yml: ghcr.io is authenticated with the job's
-    # own GITHUB_TOKEN, so there is no secret to pass.
+  # See the matching note in cd.yml: ghcr.io is authenticated with the job's
+  # own GITHUB_TOKEN, so there is no secret to pass.
 
   scan-trivy-images:
     uses: dnum-mi/fabnum-cicd/.github/workflows/scan-trivy.yml@v0

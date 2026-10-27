@@ -109,8 +109,8 @@ global:
   #   hosts:
   #   - domain.local
 
-## Gateway API configuration (alternative to Ingress)
-## Ref: https://gateway-api.sigs.k8s.io/
+# # Gateway API configuration (alternative to Ingress)
+# # Ref: https://gateway-api.sigs.k8s.io/
 gateway:
   # -- Create a Gateway resource. Usually, you reference an existing Gateway managed by the infrastructure team.
   # @section -- Global
@@ -169,13 +169,13 @@ server:
   image:
     # -- Registry to use for the app.
     # @section -- Server
-    registry: "harbor.sdid.cpin.numerique-interieur.com"  # "ghcr.io"
+    registry: harbor.sdid.cpin.numerique-interieur.com # "ghcr.io"
     # -- Repository to use for the app.
     # @section -- Server
-    repository: "tobi/server"  # "dnum-mi/test-app/server"
+    repository: tobi/server # "dnum-mi/test-app/server"
     # -- Image pull policy for the app.
     # @section -- Server
-    pullPolicy: "IfNotPresent"
+    pullPolicy: IfNotPresent
     # -- Tag to use for the app.
     # @section -- Server
     # Overrides the image tag whose default is the chart appVersion.
@@ -194,31 +194,31 @@ server:
     # @section -- Server
     labels: {}
     hosts:
-      - backend:
-          # -- Name of the backend service linked to the host record (leave empty to use the app service).
-          # @section -- Server
-          serviceName: ""
-          # -- Port used by the backend service linked to the host record (leave null to use the app service port).
-          # @section -- Server
-          # @schema type:[integer, null]
-          portNumber: null
+    - backend:
+        # -- Name of the backend service linked to the host record (leave empty to use the app service).
+        # @section -- Server
+        serviceName: ""
+        # -- Port used by the backend service linked to the host record (leave null to use the app service port).
+        # @section -- Server
+        # @schema type:[integer, null]
+        portNumber: null
         # -- Name of the host record.
         # @section -- Server
-        name: "domain.local"
-        # -- Path type of the host record.
-        # @section -- Server
-        pathType: "Prefix"
-        # -- Path of the host record to manage routing.
-        # @section -- Server
-        path: "/"
+      name: domain.local
+      # -- Path type of the host record.
+      # @section -- Server
+      pathType: Prefix
+      # -- Path of the host record to manage routing.
+      # @section -- Server
+      path: /
     # -- Enable TLS configuration.
     # @section -- Server
     tls: []
     # - secretName: domain.local-tls
     #   hosts:
     #   - domain.local
-  ## Gateway API HTTPRoute configuration (alternative to Ingress)
-  ## Ref: https://gateway-api.sigs.k8s.io/api-types/httproute/
+  # # Gateway API HTTPRoute configuration (alternative to Ingress)
+  # # Ref: https://gateway-api.sigs.k8s.io/api-types/httproute/
   httpRoute:
     # -- Enable an HTTPRoute resource for this service.
     # @section -- Server
@@ -262,8 +262,8 @@ server:
     #   - name: my-service       # defaults to chart service if not set
     #     port: 80               # defaults to service port if not set
     #     weight: 100            # for traffic splitting
-  ## Gateway API GRPCRoute configuration (for gRPC services)
-  ## Ref: https://gateway-api.sigs.k8s.io/api-types/grpcroute/
+  # # Gateway API GRPCRoute configuration (for gRPC services)
+  # # Ref: https://gateway-api.sigs.k8s.io/api-types/grpcroute/
   grpcRoute:
     # -- Enable a GRPCRoute resource for this service.
     # @section -- Server
@@ -341,7 +341,7 @@ server:
   containerPort: &serverContainerPort 8080
   # -- Server container port name.
   # @section -- Server
-  containerPortName: "http"
+  containerPortName: http
   # -- Server extra container ports.
   # @section -- Server
   extraPorts: []
@@ -360,7 +360,7 @@ server:
     readOnlyRootFilesystem: true
     capabilities:
       drop:
-        - ALL
+      - ALL
   # -- Server container env variables loaded from configmap or secret reference.
   # @section -- Server
   envFrom: []
@@ -408,7 +408,7 @@ server:
       httpGet:
         # -- Server container healthcheck endpoint (startupProbe is defined using `toYaml` so it is possible to override it completely).
         # @section -- Server
-        path: "/"
+        path: /
         # -- Port to use for healthcheck (defaults to container port).
         # @section -- Server
         port: *serverContainerPort
@@ -431,7 +431,7 @@ server:
       httpGet:
         # -- Server container healthcheck endpoint (readinessProbe is defined using `toYaml` so it is possible to override it completely).
         # @section -- Server
-        path: "/"
+        path: /
         # -- Port to use for healthcheck (defaults to container port).
         # @section -- Server
         port: *serverContainerPort
@@ -454,7 +454,7 @@ server:
       httpGet:
         # -- Server container healthcheck endpoint (livenessProbe is defined using `toYaml` so it is possible to override it completely).
         # @section -- Server
-        path: "/"
+        path: /
         # -- Port to use for healthcheck (defaults to container port).
         # @section -- Server
         port: *serverContainerPort
@@ -476,7 +476,7 @@ server:
   strategy:
     # -- Strategy type used to replace old Pods by new ones, can be `Recreate` or `RollingUpdate`.
     # @section -- Server
-    type: "RollingUpdate"
+    type: RollingUpdate
     rollingUpdate:
       # -- The maximum number of pods that can be unavailable during the update process.
       # @section -- Server
@@ -509,9 +509,9 @@ server:
   # -- List of volumes to add.
   # @section -- Server
   volumes:
-    # Writable scratch space, the root filesystem is read-only.
-    - name: tmp
-      emptyDir: {}
+  # Writable scratch space, the root filesystem is read-only.
+  - name: tmp
+    emptyDir: {}
   # - name: config-volume
   #   configMap:
   #     name: log-config
@@ -539,8 +539,8 @@ server:
   # -- List of mounts to add (normally used with `volumes` or `volumeClaims`).
   # @section -- Server
   volumeMounts:
-    - name: tmp
-      mountPath: /tmp
+  - name: tmp
+    mountPath: /tmp
   # - name: config-volume
   #   mountPath: /app/config
   #   subPath: config
@@ -556,7 +556,7 @@ server:
   service:
     # -- Type of service to create for the app.
     # @section -- Server
-    type: "ClusterIP"
+    type: ClusterIP
     # -- Port used by the service.
     # @section -- Server
     port: 80
@@ -565,10 +565,10 @@ server:
     nodePort: 31000
     # -- Port name used by the service.
     # @section -- Server
-    portName: "http"
+    portName: http
     # -- Protocol used by the service.
     # @section -- Server
-    protocol: "TCP"
+    protocol: TCP
     # -- Extra service ports.
     # @section -- Server
     extraPorts: []
@@ -580,20 +580,20 @@ server:
     requests:
       # -- Memory request for the app.
       # @section -- Server
-      memory: "256Mi"
+      memory: 256Mi
       # -- CPU request for the app.
       # @section -- Server
-      cpu: "100m"
+      cpu: 100m
       # Other stuff like GPU, etc could be added here.
       # nvidia.com/gpu: "1"
       # ephemeral-storage: "100Mi"
     limits:
       # -- Memory limit for the app.
       # @section -- Server
-      memory: "256Mi"
+      memory: 256Mi
       # -- CPU limit for the app.
       # @section -- Server
-      cpu: "100m"
+      cpu: 100m
       # Other stuff like GPU, etc could be added here.
       # nvidia.com/gpu: "1"
       # ephemeral-storage: "500Mi"
@@ -709,7 +709,7 @@ server:
       #   - update
       #   - delete
       #   - patch
-  ## Ref: https://kubernetes.io/docs/tasks/run-application/configure-pdb/
+  # # Ref: https://kubernetes.io/docs/tasks/run-application/configure-pdb/
   pdb:
     # -- Deploy a PodDisruptionBudget for the app
     # @section -- Server
@@ -734,7 +734,7 @@ server:
     # -- Policy types used in the NetworkPolicy object.
     # @section -- Server
     policyTypes:
-      - Ingress
+    - Ingress
     # -- Ingress rules for the NetworkPolicy object.
     # @section -- Server
     ingress: []
@@ -790,48 +790,48 @@ server:
       # @section -- Server
       annotations: {}
       endpoints:
-        - basicAuth:
-            # -- The secret in the service monitor namespace that contains the username for authentication.
-            # @section -- Server
-            username: ""
-            # -- The secret in the service monitor namespace that contains the password for authentication.
-            # @section -- Server
-            password: ""
-          bearerTokenSecret:
-            # -- Secret name to mount to read bearer token for scraping targets. The secret needs to be in the same namespace as the service monitor and accessible by the Prometheus Operator.
-            # @section -- Server
-            name: ""
-            # -- Secret key to mount to read bearer token for scraping targets. The secret needs to be in the same namespace as the service monitor and accessible by the Prometheus Operator.
-            # @section -- Server
-            key: ""
+      - basicAuth:
+          # -- The secret in the service monitor namespace that contains the username for authentication.
+          # @section -- Server
+          username: ""
+          # -- The secret in the service monitor namespace that contains the password for authentication.
+          # @section -- Server
+          password: ""
+        bearerTokenSecret:
+          # -- Secret name to mount to read bearer token for scraping targets. The secret needs to be in the same namespace as the service monitor and accessible by the Prometheus Operator.
+          # @section -- Server
+          name: ""
+          # -- Secret key to mount to read bearer token for scraping targets. The secret needs to be in the same namespace as the service monitor and accessible by the Prometheus Operator.
+          # @section -- Server
+          key: ""
           # -- Prometheus ServiceMonitor interval.
           # @section -- Server
-          interval: "30s"
-          # -- Prometheus ServiceMonitor scrapeTimeout. If empty, Prometheus uses the global scrape timeout unless it is less than the target's scrape interval value in which the latter is used.
-          # @section -- Server
-          scrapeTimeout: "10s"
-          # -- Path used by the Prometheus ServiceMonitor to scrape metrics.
-          # @section -- Server
-          path: "/metrics"
-          # -- When true, honorLabels preserves the metric’s labels when they collide with the target’s labels.
-          # @section -- Server
-          honorLabels: false
-          # -- Prometheus RelabelConfigs to apply to samples before scraping.
-          # @section -- Server
-          relabelings: []
-          # -- Prometheus MetricRelabelConfigs to apply to samples before ingestion.
-          # @section -- Server
-          metricRelabelings: []
-          # -- Prometheus ServiceMonitor selector.
-          # @section -- Server
-          selector: {}
-          # prometheus: kube-prometheus
-          # -- Prometheus ServiceMonitor scheme.
-          # @section -- Server
-          scheme: ""
-          # -- Prometheus ServiceMonitor tlsConfig.
-          # @section -- Server
-          tlsConfig: {}
+        interval: 30s
+        # -- Prometheus ServiceMonitor scrapeTimeout. If empty, Prometheus uses the global scrape timeout unless it is less than the target's scrape interval value in which the latter is used.
+        # @section -- Server
+        scrapeTimeout: 10s
+        # -- Path used by the Prometheus ServiceMonitor to scrape metrics.
+        # @section -- Server
+        path: /metrics
+        # -- When true, honorLabels preserves the metric’s labels when they collide with the target’s labels.
+        # @section -- Server
+        honorLabels: false
+        # -- Prometheus RelabelConfigs to apply to samples before scraping.
+        # @section -- Server
+        relabelings: []
+        # -- Prometheus MetricRelabelConfigs to apply to samples before ingestion.
+        # @section -- Server
+        metricRelabelings: []
+        # -- Prometheus ServiceMonitor selector.
+        # @section -- Server
+        selector: {}
+        # prometheus: kube-prometheus
+        # -- Prometheus ServiceMonitor scheme.
+        # @section -- Server
+        scheme: ""
+        # -- Prometheus ServiceMonitor tlsConfig.
+        # @section -- Server
+        tlsConfig: {}
 
 client:
   # -- Should the app run as a StatefulSet instead of a Deployment.
@@ -843,13 +843,13 @@ client:
   image:
     # -- Registry to use for the app.
     # @section -- Client
-    registry: "harbor.sdid.cpin.numerique-interieur.com"  # "ghcr.io"
+    registry: harbor.sdid.cpin.numerique-interieur.com # "ghcr.io"
     # -- Repository to use for the app.
     # @section -- Client
-    repository: "tobi/client"  # "dnum-mi/test-app/client"
+    repository: tobi/client # "dnum-mi/test-app/client"
     # -- Image pull policy for the app.
     # @section -- Client
-    pullPolicy: "IfNotPresent"
+    pullPolicy: IfNotPresent
     # -- Tag to use for the app.
     # @section -- Client
     # Overrides the image tag whose default is the chart appVersion.
@@ -868,31 +868,31 @@ client:
     # @section -- Client
     labels: {}
     hosts:
-      - backend:
-          # -- Name of the backend service linked to the host record (leave empty to use the app service).
-          # @section -- Client
-          serviceName: ""
-          # -- Port used by the backend service linked to the host record (leave null to use the app service port).
-          # @section -- Client
-          # @schema type:[integer, null]
-          portNumber: null
+    - backend:
+        # -- Name of the backend service linked to the host record (leave empty to use the app service).
+        # @section -- Client
+        serviceName: ""
+        # -- Port used by the backend service linked to the host record (leave null to use the app service port).
+        # @section -- Client
+        # @schema type:[integer, null]
+        portNumber: null
         # -- Name of the host record.
         # @section -- Client
-        name: "domain.local"
-        # -- Path type of the host record.
-        # @section -- Client
-        pathType: "Prefix"
-        # -- Path of the host record to manage routing.
-        # @section -- Client
-        path: "/"
+      name: domain.local
+      # -- Path type of the host record.
+      # @section -- Client
+      pathType: Prefix
+      # -- Path of the host record to manage routing.
+      # @section -- Client
+      path: /
     # -- Enable TLS configuration.
     # @section -- Client
     tls: []
     # - secretName: domain.local-tls
     #   hosts:
     #   - domain.local
-  ## Gateway API HTTPRoute configuration (alternative to Ingress)
-  ## Ref: https://gateway-api.sigs.k8s.io/api-types/httproute/
+  # # Gateway API HTTPRoute configuration (alternative to Ingress)
+  # # Ref: https://gateway-api.sigs.k8s.io/api-types/httproute/
   httpRoute:
     # -- Enable an HTTPRoute resource for this service.
     # @section -- Client
@@ -936,8 +936,8 @@ client:
     #   - name: my-service       # defaults to chart service if not set
     #     port: 80               # defaults to service port if not set
     #     weight: 100            # for traffic splitting
-  ## Gateway API GRPCRoute configuration (for gRPC services)
-  ## Ref: https://gateway-api.sigs.k8s.io/api-types/grpcroute/
+  # # Gateway API GRPCRoute configuration (for gRPC services)
+  # # Ref: https://gateway-api.sigs.k8s.io/api-types/grpcroute/
   grpcRoute:
     # -- Enable a GRPCRoute resource for this service.
     # @section -- Client
@@ -989,36 +989,36 @@ client:
     # The image keeps its files owned by 1001 with the group root (770): group 0
     # as a supplemental group grants the access without running as root.
     supplementalGroups:
-      - 0
+    - 0
     seccompProfile:
       type: RuntimeDefault
   # fsGroup: 2000
   # -- Init containers to add to the app pod.
   # @section -- Client
   initContainers:
-    - name: copy-assets
-      image: "{{ .Values.global.imageRegistry | default .Values.client.image.registry }}/{{ .Values.client.image.repository }}:{{ .Values.client.image.tag | default .Chart.AppVersion }}"
-      imagePullPolicy: "{{ .Values.client.image.pullPolicy }}"
-      command:
-        - sh
-        - -c
-        - cp -R /usr/share/nginx/html/assets/. /work/
-      securityContext:
-        allowPrivilegeEscalation: false
-        readOnlyRootFilesystem: true
-        capabilities:
-          drop:
-            - ALL
-      resources:
-        requests:
-          cpu: 10m
-          memory: 16Mi
-        limits:
-          cpu: 100m
-          memory: 64Mi
-      volumeMounts:
-        - name: assets
-          mountPath: /work
+  - name: copy-assets
+    image: "{{ .Values.global.imageRegistry | default .Values.client.image.registry }}/{{ .Values.client.image.repository }}:{{ .Values.client.image.tag | default .Chart.AppVersion }}"
+    imagePullPolicy: "{{ .Values.client.image.pullPolicy }}"
+    command:
+    - sh
+    - -c
+    - cp -R /usr/share/nginx/html/assets/. /work/
+    securityContext:
+      allowPrivilegeEscalation: false
+      readOnlyRootFilesystem: true
+      capabilities:
+        drop:
+        - ALL
+    resources:
+      requests:
+        cpu: 10m
+        memory: 16Mi
+      limits:
+        cpu: 100m
+        memory: 64Mi
+    volumeMounts:
+    - name: assets
+      mountPath: /work
   # - name: wait-for-keycloak
   #   image: docker.io/curlimages/curl:8.18.0
   #   command:
@@ -1042,7 +1042,7 @@ client:
   containerPort: &clientContainerPort 8080
   # -- Client container port name.
   # @section -- Client
-  containerPortName: "http"
+  containerPortName: http
   # -- Client extra container ports.
   # @section -- Client
   extraPorts: []
@@ -1061,7 +1061,7 @@ client:
     readOnlyRootFilesystem: true
     capabilities:
       drop:
-        - ALL
+      - ALL
   # -- Client container env variables loaded from configmap or secret reference.
   # @section -- Client
   envFrom: []
@@ -1109,7 +1109,7 @@ client:
       httpGet:
         # -- Client container healthcheck endpoint (startupProbe is defined using `toYaml` so it is possible to override it completely).
         # @section -- Client
-        path: "/"
+        path: /
         # -- Port to use for healthcheck (defaults to container port).
         # @section -- Client
         port: *clientContainerPort
@@ -1132,7 +1132,7 @@ client:
       httpGet:
         # -- Client container healthcheck endpoint (readinessProbe is defined using `toYaml` so it is possible to override it completely).
         # @section -- Client
-        path: "/"
+        path: /
         # -- Port to use for healthcheck (defaults to container port).
         # @section -- Client
         port: *clientContainerPort
@@ -1155,7 +1155,7 @@ client:
       httpGet:
         # -- Client container healthcheck endpoint (livenessProbe is defined using `toYaml` so it is possible to override it completely).
         # @section -- Client
-        path: "/"
+        path: /
         # -- Port to use for healthcheck (defaults to container port).
         # @section -- Client
         port: *clientContainerPort
@@ -1177,7 +1177,7 @@ client:
   strategy:
     # -- Strategy type used to replace old Pods by new ones, can be `Recreate` or `RollingUpdate`.
     # @section -- Client
-    type: "RollingUpdate"
+    type: RollingUpdate
     rollingUpdate:
       # -- The maximum number of pods that can be unavailable during the update process.
       # @section -- Client
@@ -1210,13 +1210,13 @@ client:
   # -- List of volumes to add.
   # @section -- Client
   volumes:
-    # Writable scratch space, the root filesystem is read-only.
-    - name: tmp
-      emptyDir: {}
+  # Writable scratch space, the root filesystem is read-only.
+  - name: tmp
+    emptyDir: {}
     # The entrypoint rewrites the built JS at start to inject the runtime
     # variables; copy-assets fills this volume from the image first.
-    - name: assets
-      emptyDir: {}
+  - name: assets
+    emptyDir: {}
   # - name: config-volume
   #   configMap:
   #     name: log-config
@@ -1244,10 +1244,10 @@ client:
   # -- List of mounts to add (normally used with `volumes` or `volumeClaims`).
   # @section -- Client
   volumeMounts:
-    - name: tmp
-      mountPath: /tmp
-    - name: assets
-      mountPath: /usr/share/nginx/html/assets
+  - name: tmp
+    mountPath: /tmp
+  - name: assets
+    mountPath: /usr/share/nginx/html/assets
   # - name: config-volume
   #   mountPath: /app/config
   #   subPath: config
@@ -1263,7 +1263,7 @@ client:
   service:
     # -- Type of service to create for the app.
     # @section -- Client
-    type: "ClusterIP"
+    type: ClusterIP
     # -- Port used by the service.
     # @section -- Client
     port: 80
@@ -1272,10 +1272,10 @@ client:
     nodePort: 31000
     # -- Port name used by the service.
     # @section -- Client
-    portName: "http"
+    portName: http
     # -- Protocol used by the service.
     # @section -- Client
-    protocol: "TCP"
+    protocol: TCP
     # -- Extra service ports.
     # @section -- Client
     extraPorts: []
@@ -1287,20 +1287,20 @@ client:
     requests:
       # -- Memory request for the app.
       # @section -- Client
-      memory: "256Mi"
+      memory: 256Mi
       # -- CPU request for the app.
       # @section -- Client
-      cpu: "100m"
+      cpu: 100m
       # Other stuff like GPU, etc could be added here.
       # nvidia.com/gpu: "1"
       # ephemeral-storage: "100Mi"
     limits:
       # -- Memory limit for the app.
       # @section -- Client
-      memory: "256Mi"
+      memory: 256Mi
       # -- CPU limit for the app.
       # @section -- Client
-      cpu: "100m"
+      cpu: 100m
       # Other stuff like GPU, etc could be added here.
       # nvidia.com/gpu: "1"
       # ephemeral-storage: "500Mi"
@@ -1416,7 +1416,7 @@ client:
       #   - update
       #   - delete
       #   - patch
-  ## Ref: https://kubernetes.io/docs/tasks/run-application/configure-pdb/
+  # # Ref: https://kubernetes.io/docs/tasks/run-application/configure-pdb/
   pdb:
     # -- Deploy a PodDisruptionBudget for the app
     # @section -- Client
@@ -1441,7 +1441,7 @@ client:
     # -- Policy types used in the NetworkPolicy object.
     # @section -- Client
     policyTypes:
-      - Ingress
+    - Ingress
     # -- Ingress rules for the NetworkPolicy object.
     # @section -- Client
     ingress: []
@@ -1497,48 +1497,48 @@ client:
       # @section -- Client
       annotations: {}
       endpoints:
-        - basicAuth:
-            # -- The secret in the service monitor namespace that contains the username for authentication.
-            # @section -- Client
-            username: ""
-            # -- The secret in the service monitor namespace that contains the password for authentication.
-            # @section -- Client
-            password: ""
-          bearerTokenSecret:
-            # -- Secret name to mount to read bearer token for scraping targets. The secret needs to be in the same namespace as the service monitor and accessible by the Prometheus Operator.
-            # @section -- Client
-            name: ""
-            # -- Secret key to mount to read bearer token for scraping targets. The secret needs to be in the same namespace as the service monitor and accessible by the Prometheus Operator.
-            # @section -- Client
-            key: ""
+      - basicAuth:
+          # -- The secret in the service monitor namespace that contains the username for authentication.
+          # @section -- Client
+          username: ""
+          # -- The secret in the service monitor namespace that contains the password for authentication.
+          # @section -- Client
+          password: ""
+        bearerTokenSecret:
+          # -- Secret name to mount to read bearer token for scraping targets. The secret needs to be in the same namespace as the service monitor and accessible by the Prometheus Operator.
+          # @section -- Client
+          name: ""
+          # -- Secret key to mount to read bearer token for scraping targets. The secret needs to be in the same namespace as the service monitor and accessible by the Prometheus Operator.
+          # @section -- Client
+          key: ""
           # -- Prometheus ServiceMonitor interval.
           # @section -- Client
-          interval: "30s"
-          # -- Prometheus ServiceMonitor scrapeTimeout. If empty, Prometheus uses the global scrape timeout unless it is less than the target's scrape interval value in which the latter is used.
-          # @section -- Client
-          scrapeTimeout: "10s"
-          # -- Path used by the Prometheus ServiceMonitor to scrape metrics.
-          # @section -- Client
-          path: "/metrics"
-          # -- When true, honorLabels preserves the metric’s labels when they collide with the target’s labels.
-          # @section -- Client
-          honorLabels: false
-          # -- Prometheus RelabelConfigs to apply to samples before scraping.
-          # @section -- Client
-          relabelings: []
-          # -- Prometheus MetricRelabelConfigs to apply to samples before ingestion.
-          # @section -- Client
-          metricRelabelings: []
-          # -- Prometheus ServiceMonitor selector.
-          # @section -- Client
-          selector: {}
-          # prometheus: kube-prometheus
-          # -- Prometheus ServiceMonitor scheme.
-          # @section -- Client
-          scheme: ""
-          # -- Prometheus ServiceMonitor tlsConfig.
-          # @section -- Client
-          tlsConfig: {}
+        interval: 30s
+        # -- Prometheus ServiceMonitor scrapeTimeout. If empty, Prometheus uses the global scrape timeout unless it is less than the target's scrape interval value in which the latter is used.
+        # @section -- Client
+        scrapeTimeout: 10s
+        # -- Path used by the Prometheus ServiceMonitor to scrape metrics.
+        # @section -- Client
+        path: /metrics
+        # -- When true, honorLabels preserves the metric’s labels when they collide with the target’s labels.
+        # @section -- Client
+        honorLabels: false
+        # -- Prometheus RelabelConfigs to apply to samples before scraping.
+        # @section -- Client
+        relabelings: []
+        # -- Prometheus MetricRelabelConfigs to apply to samples before ingestion.
+        # @section -- Client
+        metricRelabelings: []
+        # -- Prometheus ServiceMonitor selector.
+        # @section -- Client
+        selector: {}
+        # prometheus: kube-prometheus
+        # -- Prometheus ServiceMonitor scheme.
+        # @section -- Client
+        scheme: ""
+        # -- Prometheus ServiceMonitor tlsConfig.
+        # @section -- Client
+        tlsConfig: {}
 
 # -- Add extra specs dynamically to this chart.
 # @section -- General
@@ -1578,8 +1578,8 @@ extraObjects: []
 #       name: foo
 #       type: "Opaque"
 
-## Additional services comming from dependencies can be configured below.
-## Ref: https://artifacthub.io/packages/helm/this-is-tobi-helm-charts/cnpg-cluster
+# # Additional services comming from dependencies can be configured below.
+# # Ref: https://artifacthub.io/packages/helm/this-is-tobi-helm-charts/cnpg-cluster
 # cnpg:
 #   enabled: false
 #   fullnameOverride: server-pg-cluster

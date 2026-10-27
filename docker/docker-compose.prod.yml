@@ -8,9 +8,9 @@ services:
       target: prod
     restart: always
     ports:
-      - 8081:8081
+    - 8081:8081
     networks:
-      - test-app-network
+    - test-app-network
 
   client:
     image: test-app/client:prod
@@ -21,11 +21,11 @@ services:
       target: prod
     restart: always
     ports:
-      - 8080:8080
+    - 8080:8080
     environment:
       VITE_API_URL: http://localhost:8081/api
     networks:
-      - test-app-network
+    - test-app-network
 
 networks:
   test-app-network:

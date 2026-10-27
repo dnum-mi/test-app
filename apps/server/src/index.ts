@@ -1,8 +1,8 @@
 const CORS_HEADERS = {
   headers: {
-      'Access-Control-Allow-Origin': '*',
-      'Access-Control-Allow-Methods': 'OPTIONS, POST',
-      'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Methods': 'OPTIONS, POST',
+    'Access-Control-Allow-Headers': 'Content-Type, Authorization',
   },
 }
 
@@ -15,9 +15,9 @@ const server = Bun.serve({
         githubUrls: [
           'https://github.com/dnum-mi',
           'https://github.com/IA-Generative',
-        ]
-      }), 
-      CORS_HEADERS
+        ],
+      }),
+      CORS_HEADERS,
     )
   },
 })
