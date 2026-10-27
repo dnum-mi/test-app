@@ -2,7 +2,6 @@
 # gives the resources their names: pin them. fullnameOverride is what every
 # resource (and the selector labels) is named after - test-app-server,
 # test-app-client, ... - whatever the release is called.
-nameOverride: test-app
 fullnameOverride: test-app
 
 global:
