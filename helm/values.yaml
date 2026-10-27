@@ -169,10 +169,10 @@ server:
   image:
     # -- Registry to use for the app.
     # @section -- Server
-    registry: harbor.sdid.cpin.numerique-interieur.com # "ghcr.io"
+    registry: harbor.sdid.cpin.numerique-interieur.com  # "ghcr.io"
     # -- Repository to use for the app.
     # @section -- Server
-    repository: tobi/server # "dnum-mi/test-app/server"
+    repository: tobi/server  # "dnum-mi/test-app/server"
     # -- Image pull policy for the app.
     # @section -- Server
     pullPolicy: IfNotPresent
@@ -202,8 +202,8 @@ server:
         # @section -- Server
         # @schema type:[integer, null]
         portNumber: null
-        # -- Name of the host record.
-        # @section -- Server
+      # -- Name of the host record.
+      # @section -- Server
       name: domain.local
       # -- Path type of the host record.
       # @section -- Server
@@ -804,8 +804,8 @@ server:
           # -- Secret key to mount to read bearer token for scraping targets. The secret needs to be in the same namespace as the service monitor and accessible by the Prometheus Operator.
           # @section -- Server
           key: ""
-          # -- Prometheus ServiceMonitor interval.
-          # @section -- Server
+        # -- Prometheus ServiceMonitor interval.
+        # @section -- Server
         interval: 30s
         # -- Prometheus ServiceMonitor scrapeTimeout. If empty, Prometheus uses the global scrape timeout unless it is less than the target's scrape interval value in which the latter is used.
         # @section -- Server
@@ -843,10 +843,10 @@ client:
   image:
     # -- Registry to use for the app.
     # @section -- Client
-    registry: harbor.sdid.cpin.numerique-interieur.com # "ghcr.io"
+    registry: harbor.sdid.cpin.numerique-interieur.com  # "ghcr.io"
     # -- Repository to use for the app.
     # @section -- Client
-    repository: tobi/client # "dnum-mi/test-app/client"
+    repository: tobi/client  # "dnum-mi/test-app/client"
     # -- Image pull policy for the app.
     # @section -- Client
     pullPolicy: IfNotPresent
@@ -876,8 +876,8 @@ client:
         # @section -- Client
         # @schema type:[integer, null]
         portNumber: null
-        # -- Name of the host record.
-        # @section -- Client
+      # -- Name of the host record.
+      # @section -- Client
       name: domain.local
       # -- Path type of the host record.
       # @section -- Client
@@ -1511,8 +1511,8 @@ client:
           # -- Secret key to mount to read bearer token for scraping targets. The secret needs to be in the same namespace as the service monitor and accessible by the Prometheus Operator.
           # @section -- Client
           key: ""
-          # -- Prometheus ServiceMonitor interval.
-          # @section -- Client
+        # -- Prometheus ServiceMonitor interval.
+        # @section -- Client
         interval: 30s
         # -- Prometheus ServiceMonitor scrapeTimeout. If empty, Prometheus uses the global scrape timeout unless it is less than the target's scrape interval value in which the latter is used.
         # @section -- Client
