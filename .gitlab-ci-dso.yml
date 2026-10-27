@@ -3,6 +3,9 @@ include:
     file:
       - vault-ci.yml
       - kaniko-ci.yml
+      # Temporarily unused: `helm-package-push` below inlines a fixed copy of
+      # `.helm:build-push` while the fix is validated before being proposed
+      # upstream. Restore the `extends` once the catalogue carries it.
       - helm-ci.yml
       - sonar-ci.yml
     ref: main
@@ -11,7 +14,17 @@ default:
   image: alpine:3.23
 variables:
   REGISTRY_URL: ${REGISTRY_HOST}/${PROJECT_PATH}
-  CHARTS_DIR: ./charts
+  # The chart lives at the repository root (helm/Chart.yaml), not nested under a
+  # charts/ parent - so CHARTS_DIR is "." (one level up from the chart itself).
+  CHARTS_DIR: .
+  # Name the in-repo chart is published under in Harbor (<project>/test-app-mono).
+  # test-helm mirrors into the same DSO project and pushes its own chart, also
+  # named `test-app`, at <project>/test-app; sharing that name would make the two
+  # pipelines overwrite each other's `test-app:<version>`. Only the packaged copy
+  # is renamed - Chart.yaml in git (and the chart published to GHCR) keep
+  # `test-app`. helm/values/common.yaml pins nameOverride so the rename does not
+  # change the deployed resource names.
+  CHART_PUSH_NAME: test-app-mono
 
 stages:
   - read-secret
@@ -40,14 +53,34 @@ docker-build-client:
   before_script:
     - |
       SHORT_SHA=$(echo $CI_COMMIT_SHA | cut -c1-7)
+      # The CPiN mirror only ever syncs branch refs, never tags (cd.yml's
+      # sync-cpin job passes a branch name), so this pipeline never runs as a
+      # GitLab tag pipeline and $CI_COMMIT_TAG is always empty here. appVersion
+      # is the app version that bump-chart-local already committed to
+      # helm/Chart.yaml before the sync ran.
+      APP_VERSION=$(grep '^appVersion:' helm/Chart.yaml | awk '{print $2}' | tr -d '"')
+      if [ -z "$APP_VERSION" ]; then
+        echo "Error: Could not extract appVersion from helm/Chart.yaml"
+        exit 1
+      fi
       TAGS="client:$SHORT_SHA"
       if [ "$CI_COMMIT_REF_NAME" != "main" ]; then
         TAGS="$TAGS client:$CI_COMMIT_REF_SLUG"
       fi
-      if [ -n "$CI_COMMIT_TAG" ]; then
-        TAG_WITHOUT_V=${CI_COMMIT_TAG#v}
-        TAGS="$TAGS client:$TAG_WITHOUT_V"
-        if echo "$CI_COMMIT_TAG" | grep -qE '^v[0-9]+\.[0-9]+\.[0-9]+$'; then
+      # Pull requests tag the images pr-<N>, matching this repository's own
+      # pr-<N> images on GHCR. GITHUB_PR_NUMBER is only set when the sync was
+      # triggered for a pull request (see .github/workflows/cpin-sync.yml);
+      # like the ref-slug tag it carries no version, so it never clobbers a
+      # released image.
+      if [ -n "$GITHUB_PR_NUMBER" ]; then
+        TAGS="$TAGS client:pr-$GITHUB_PR_NUMBER"
+      fi
+      # Environments deploy the version tag, so only
+      # the branches releases are cut from may write it: a pipeline on any other
+      # branch would replace a released image with unreleased code.
+      if [ "$CI_COMMIT_BRANCH" = "develop" ] || [ "$CI_COMMIT_BRANCH" = "main" ]; then
+        TAGS="$TAGS client:$APP_VERSION"
+        if echo "$APP_VERSION" | grep -qE '^[0-9]+\.[0-9]+\.[0-9]+$'; then
           TAGS="$TAGS client:latest"
         fi
       fi
@@ -64,24 +97,125 @@ docker-build-server:
   before_script:
     - |
       SHORT_SHA=$(echo $CI_COMMIT_SHA | cut -c1-7)
+      # See docker-build-client: this pipeline never runs as a GitLab tag pipeline,
+      # so the version tag comes from the appVersion already committed to Chart.yaml.
+      APP_VERSION=$(grep '^appVersion:' helm/Chart.yaml | awk '{print $2}' | tr -d '"')
+      if [ -z "$APP_VERSION" ]; then
+        echo "Error: Could not extract appVersion from helm/Chart.yaml"
+        exit 1
+      fi
       TAGS="server:$SHORT_SHA"
       if [ "$CI_COMMIT_REF_NAME" != "main" ]; then
         TAGS="$TAGS server:$CI_COMMIT_REF_SLUG"
       fi
-      if [ -n "$CI_COMMIT_TAG" ]; then
-        TAG_WITHOUT_V=${CI_COMMIT_TAG#v}
-        TAGS="$TAGS server:$TAG_WITHOUT_V"
-        if echo "$CI_COMMIT_TAG" | grep -qE '^v[0-9]+\.[0-9]+\.[0-9]+$'; then
+      # See the pr-<N> tag in docker-build-client.
+      if [ -n "$GITHUB_PR_NUMBER" ]; then
+        TAGS="$TAGS server:pr-$GITHUB_PR_NUMBER"
+      fi
+      # Version tags from develop and main only, see docker-build-client.
+      if [ "$CI_COMMIT_BRANCH" = "develop" ] || [ "$CI_COMMIT_BRANCH" = "main" ]; then
+        TAGS="$TAGS server:$APP_VERSION"
+        if echo "$APP_VERSION" | grep -qE '^[0-9]+\.[0-9]+\.[0-9]+$'; then
           TAGS="$TAGS server:latest"
         fi
       fi
       export IMAGE_NAMES="$TAGS"
       echo "Building with tags: $IMAGE_NAMES"
 
-.helm-package-push: # Remove `.` at the start of the job if helm-package-push is enabled (for monorepo including charts)
+# Inlined copy of the catalogue's `.helm:build-push` (helm-ci.yml) with its chart
+# detection fixed, so the fix can be exercised before it is proposed upstream.
+#   - the changed-files grep matches `${CHARTS_PREFIX}/`, derived from CHARTS_DIR,
+#     instead of a hardcoded `charts/` - this repository's chart lives at `helm/`;
+#   - that grep is followed by `|| true` so a commit touching no chart (grep exits
+#     1 on no match) results in a clean "nothing to package" skip rather than
+#     tripping `set -eo pipefail` into a failed job;
+#   - CI_COMMIT_BEFORE_SHA is only used for `git diff` once `git cat-file -e`
+#     confirms the commit it names is present locally: the runner's clone is
+#     shallow (only the last `git depth` commits are fetched), so a before-SHA
+#     further back than that isn't resolvable, and diffing against a missing
+#     object fails outright instead of producing a diff - falling back to
+#     packaging every chart is the same safe default already used when there is
+#     no previous commit at all (a first push to a branch).
+helm-package-push:
   stage: helm-package
-  extends: .helm:build-push
   only:
     - tags
     - main
+    - develop
   image: alpine/helm:4.1.3
+  script:
+    # Install git for detecting changed charts
+    - apk add --no-cache git
+    # Detect changed charts based on git diff
+    - |
+      CHARTS_PREFIX=$(echo "${CHARTS_DIR}" | sed 's|^\./||; s|/$||')
+      if [ -z "$CI_COMMIT_BEFORE_SHA" ] || [ "$CI_COMMIT_BEFORE_SHA" = "0000000000000000000000000000000000000000" ] || ! git cat-file -e "${CI_COMMIT_BEFORE_SHA}^{commit}" 2>/dev/null; then
+        echo "No previous commit found (or not available in this shallow clone), packaging all charts"
+        CHANGED_CHARTS=$(find ${CHARTS_DIR} -maxdepth 1 -type d ! -path ${CHARTS_DIR} -exec basename {} \;)
+      else
+        echo "Detecting changed charts between $CI_COMMIT_BEFORE_SHA and $CI_COMMIT_SHA"
+        CHANGED_FILES=$(git diff --name-only ${CI_COMMIT_BEFORE_SHA} ${CI_COMMIT_SHA})
+        echo "Changed files: $CHANGED_FILES"
+        if [ "$CHARTS_PREFIX" = "." ] || [ -z "$CHARTS_PREFIX" ]; then
+          # Charts sit at the repository root, so the chart directory is the first
+          # path segment - same set the `find` branch above would return.
+          CHANGED_CHARTS=$(echo "$CHANGED_FILES" | cut -d'/' -f1 | sort -u)
+        else
+          CHANGED_CHARTS=$(echo "$CHANGED_FILES" | grep "^${CHARTS_PREFIX}/" | cut -d'/' -f2 | sort -u || true)
+        fi
+      fi
+      echo "Changed charts: $CHANGED_CHARTS"
+    - |
+      if [ -z "$CHANGED_CHARTS" ]; then
+        echo "No charts changed, skipping..."
+        exit 0
+      fi
+    # Setup Docker auth for Helm (same credentials as kaniko)
+    - mkdir -p /root/.docker
+    - echo "$DOCKER_AUTH" > /root/.docker/config.json
+    # Package and push each changed chart
+    - |
+      for CHART in $CHANGED_CHARTS; do
+        CHART_PATH="${CHARTS_DIR}/${CHART}"
+        if [ ! -f "${CHART_PATH}/Chart.yaml" ]; then
+          echo "Skipping ${CHART} - not a valid chart"
+          continue
+        fi
+
+        # Extract version from Chart.yaml
+        CHART_VERSION=$(grep '^version:' ${CHART_PATH}/Chart.yaml | awk '{print $2}')
+        CHART_NAME=$(grep '^name:' ${CHART_PATH}/Chart.yaml | awk '{print $2}')
+
+        # Validate extracted values
+        if [ -z "$CHART_VERSION" ] || [ -z "$CHART_NAME" ]; then
+          echo "Error: Could not extract chart name or version from ${CHART_PATH}/Chart.yaml"
+          exit 1
+        fi
+
+        # Publish under CHART_PUSH_NAME: package a copy whose Chart.yaml carries
+        # that name, leaving the sources untouched.
+        if [ -n "$CHART_PUSH_NAME" ] && [ "$CHART_PUSH_NAME" != "$CHART_NAME" ]; then
+          PUSH_PATH="$(mktemp -d)/${CHART_PUSH_NAME}"
+          mkdir -p "${PUSH_PATH}"
+          cp -R "${CHART_PATH}/." "${PUSH_PATH}/"
+          sed "s|^name:.*|name: ${CHART_PUSH_NAME}|" "${CHART_PATH}/Chart.yaml" > "${PUSH_PATH}/Chart.yaml"
+          CHART_PATH="${PUSH_PATH}"
+          CHART_NAME="${CHART_PUSH_NAME}"
+        fi
+
+        echo "Packaging ${CHART_NAME} version ${CHART_VERSION}"
+
+        # Update dependencies if Chart.lock exists or dependencies are defined
+        if [ -f "${CHART_PATH}/Chart.lock" ] || grep -q "^dependencies:" "${CHART_PATH}/Chart.yaml"; then
+          echo "Updating chart dependencies..."
+          helm dependency update ${CHART_PATH}
+        fi
+
+        # Package the chart
+        helm package ${CHART_PATH}
+
+        # Push to Harbor as OCI artifact
+        helm push ${CHART_NAME}-${CHART_VERSION}.tgz oci://${IMAGE_REPOSITORY}
+
+        echo "Successfully pushed ${CHART_NAME}:${CHART_VERSION} to ${IMAGE_REPOSITORY}"
+      done

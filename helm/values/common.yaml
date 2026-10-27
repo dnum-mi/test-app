@@ -1,3 +1,7 @@
+# Keeps the resource names (test-app-server, ...) the same whichever name the
+# chart is published under: the copy pushed to Harbor is named test-app-mono.
+nameOverride: test-app
+
 global:
   ingress:
     enabled: true
