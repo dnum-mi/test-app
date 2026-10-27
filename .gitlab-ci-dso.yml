@@ -53,11 +53,12 @@ docker-build-client:
   before_script:
     - |
       SHORT_SHA=$(echo $CI_COMMIT_SHA | cut -c1-7)
-      # The CPiN mirror only ever syncs branch refs, never tags (cd.yml's
-      # sync-cpin job passes a branch name), so this pipeline never runs as a
-      # GitLab tag pipeline and $CI_COMMIT_TAG is always empty here. appVersion
-      # is the app version that bump-chart-local already committed to
-      # helm/Chart.yaml before the sync ran.
+      # cd.yml's sync-cpin job syncs the branch, not the release tag: the tag
+      # sits on release-please's commit, which comes before the chart bump, so
+      # Chart.yaml at the tag still carries the previous appVersion. This
+      # pipeline therefore runs as a branch pipeline and $CI_COMMIT_TAG is empty
+      # here; appVersion is the app version bump-chart-local already committed
+      # to helm/Chart.yaml before the sync ran.
       APP_VERSION=$(grep '^appVersion:' helm/Chart.yaml | awk '{print $2}' | tr -d '"')
       if [ -z "$APP_VERSION" ]; then
         echo "Error: Could not extract appVersion from helm/Chart.yaml"
@@ -97,8 +98,8 @@ docker-build-server:
   before_script:
     - |
       SHORT_SHA=$(echo $CI_COMMIT_SHA | cut -c1-7)
-      # See docker-build-client: this pipeline never runs as a GitLab tag pipeline,
-      # so the version tag comes from the appVersion already committed to Chart.yaml.
+      # See docker-build-client: this runs as a branch pipeline, so the version
+      # tag comes from the appVersion already committed to Chart.yaml.
       APP_VERSION=$(grep '^appVersion:' helm/Chart.yaml | awk '{print $2}' | tr -d '"')
       if [ -z "$APP_VERSION" ]; then
         echo "Error: Could not extract appVersion from helm/Chart.yaml"
