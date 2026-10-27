@@ -142,6 +142,11 @@ jobs:
       APP_CLIENT_ID: ${{ secrets.APP_CLIENT_ID }}
       APP_PRIVATE_KEY: ${{ secrets.APP_PRIVATE_KEY }}
 
+  # The dedicated chart repository flow, alongside the in-repo chart above:
+  # dispatches test-helm's update-chart.yml, whose own pipeline publishes the
+  # chart to Harbor at the project root (<project>/test-app). The in-repo chart
+  # goes to <project>/test-app-mono (see .gitlab-ci-dso.yml), so the two
+  # never overwrite each other. test-helm's cd.yml can also be run by hand.
   bump-chart-remote:
     uses: dnum-mi/fabnum-cicd/.github/workflows/dispatch-helm-chart.yml@v0
     needs:
@@ -214,6 +219,15 @@ jobs:
     with:
       RELEASE_BRANCH: ${{ needs.expose-vars.outputs.RELEASE_BRANCH }}
       PRERELEASE_BRANCH: ${{ needs.expose-vars.outputs.PRERELEASE_BRANCH }}
+      # Files a release rewrites on main that develop's rc cycle rewrites too:
+      # release-please bumps package.json (release-type node, not listed in
+      # extra-files) and bump-chart-local rewrites the chart's Chart.yaml and
+      # README. A rebase conflict confined to these is resolved in favour of
+      # develop; without them the job fails on the first such conflict.
+      MANAGED_FILES: |
+        package.json
+        helm/Chart.yaml
+        helm/README.md
 
   sync-cpin:
     uses: dnum-mi/fabnum-cicd/.github/workflows/sync-cpin.yml@v0
@@ -230,7 +244,10 @@ jobs:
     with:
       GITLAB_URL: ${{ vars.GITLAB_URL }}
       GIT_MIRROR_PROJECT_ID: ${{ vars.GIT_MIRROR_PROJECT_ID }}
-      BRANCH_TO_SYNC: ${{ format('v{0}', needs.release.outputs.version) }}
+      # The mirror forwards branches only, never tags: .gitlab-ci-dso.yml reads
+      # the version from helm/Chart.yaml, which bump-chart-local has already
+      # committed to this branch.
+      BRANCH_TO_SYNC: ${{ github.ref_name }}
       REPOSITORY_NAME: ${{ vars.REPOSITORY_NAME }}
     secrets:
       GIT_MIRROR_TOKEN: ${{ secrets.GIT_MIRROR_TOKEN }}
